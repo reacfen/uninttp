@@ -4,7 +4,7 @@ A universal type for non-type template parameters for C++20 or later.
 
 ## Installation:
 
-uninttp (**U**niversal **N**on-**T**ype **T**emplate **P**arameters) is a header-only library, meaning you only need to include the required header(s) to start using it in your project/environment. In this case, simply doing `#include <uninttp/uni_auto.hpp>` should suffice.
+uninttp (**Uni**versal **N**on-**T**ype **T**emplate **P**arameters) is a header-only library, meaning you only need to include the required header(s) to start using it in your project/environment. In this case, simply doing `#include <uninttp/uni_auto.hpp>` should suffice.
 
 ## Usage:
 
