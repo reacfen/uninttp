@@ -46,13 +46,11 @@ namespace uninttp {
             for (std::size_t i = 0; i < N; i++)
                 values[i] = v[i];
         }
-        constexpr operator type() const
-        requires (!IsInitializedAsArray) {
-            return *values;
-        }
-        constexpr operator type() const
-        requires (IsInitializedAsArray) {
-            return values;
+        constexpr operator type() const {
+            if constexpr (IsInitializedAsArray)
+                return values;
+            else
+                return *values;
         }
         constexpr const T* begin() const
         requires (IsInitializedAsArray) {
