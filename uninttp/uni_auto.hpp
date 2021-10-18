@@ -36,7 +36,6 @@ SOFTWARE.
 
 #include <type_traits>
 #include <cstddef>
-#include <iterator>
 
 namespace uninttp {
     template <typename T, std::size_t N = 1, bool IsInitializedAsArray = false>
