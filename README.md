@@ -27,7 +27,7 @@ int main() {
 
 And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be completely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However,  a template parameter declared with`uni_auto` can do much more than `auto` in the sense that you can also pass string literals  and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/rqoj1n3jY)
+However, a template parameter declared with`uni_auto` can do much more than `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/575PGfjjf)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -52,12 +52,12 @@ int main() {
     // Passing a string literal
     static_assert(std::strcmp(shift<"foobar", 3>(), "bar") == 0);
     // Passing an array marked as 'constexpr'
-	constexpr int arr[] = { 1, 8, 9, 20 };
-	print_array<arr>(); // Prints 1 8 9 20
+    constexpr int arr[] = { 1, 8, 9, 20 };
+    print_array<arr>(); // 1 8 9 20
 }
 ```
 
-You can also use it with parameter packs, obviously: [<kbd>Demo</kbd>](https://godbolt.org/z/hTv1bM34o)
+You can also use it with parameter packs, obviously: [<kbd>Demo</kbd>](https://godbolt.org/z/sY5z4fnEW)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -71,7 +71,7 @@ void print() {
 }
 
 int main() {
-    print<1, 2, "foo">(); // Prints 1 2 foo
+    print<1, 2, "foo">(); // 1 2 foo
 }
 ```
 
@@ -97,7 +97,7 @@ int main() {
 }
 ```
 
-> **Note**: One can also "*exploit*" the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/PEdEs5zrW)
+> **Note**: One can also "*exploit*" the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/j6rGh4hr8)
 > 
 > ```cpp
 > #include <uninttp/uni_auto.hpp>
@@ -119,8 +119,8 @@ int main() {
 > }
 > 
 > int main() {
->     do_something<"foobar">(); // Prints: "A string was passed"
->     do_something<123>();      // Prints: "An integer was passed"
+>     do_something<"foobar">(); // A string was passed
+>     do_something<123>();      // An integer was passed
 >     // do_something<12.3>();  // Error!
 > }
 > ```
