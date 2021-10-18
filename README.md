@@ -1,14 +1,14 @@
 # uninttp
 
-A universal non-type template parameter implementation for C++20 and later.
+A universal type for non-type template parameters for C++20 or later.
 
 ## Installation:
 
-uninttp is header-only, meaning you only need to include the required headers to start using it in your project/environment.
+uninttp (**U**niversal **N**on-**T**ype **T**emplate **P**arameter) is a header-only library, meaning you only need to include the required header(s) to start using it in your project/environment. In this case, simply doing `#include <uninttp/uni_auto.hpp>` should suffice.
 
 ## Usage:
 
-Using uninttp is pretty straightforward, it usually acts synonymous with how the `auto` template parameter works:
+Using uninttp is pretty straightforward and is synonymous to `auto` in *most* cases: [<kbd>Demo</kbd>](https://godbolt.org/z/zWcs5fhMq)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -27,7 +27,7 @@ int main() {
 
 And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be completely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However,  a template parameter declared with`uni_auto` can do much more than `auto` in the sense that you can also pass string literals  and `constexpr` arrays as non-type template parameters through it:
+However,  a template parameter declared with`uni_auto` can do much more than `auto` in the sense that you can also pass string literals  and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/rqoj1n3jY)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -57,7 +57,7 @@ int main() {
 }
 ```
 
-You can also use it with parameter packs, obviously:
+You can also use it with parameter packs, obviously: [<kbd>Demo</kbd>](https://godbolt.org/z/hTv1bM34o)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -75,7 +75,7 @@ int main() {
 }
 ```
 
-You can also enforce a type by adding a constraint:
+You can also enforce a type by adding a constraint: [<kbd>Demo</kbd>](https://godbolt.org/z/a3KMT8Ges)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -97,7 +97,7 @@ int main() {
 }
 ```
 
-> **Note**: One can also "*exploit*" the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism:
+> **Note**: One can also "*exploit*" the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/PEdEs5zrW)
 > 
 > ```cpp
 > #include <uninttp/uni_auto.hpp>
@@ -125,7 +125,7 @@ int main() {
 > }
 > ```
 
-Unsurprisingly, one can pass trivial structs through `uni_auto` as well:
+Unsurprisingly, one can pass trivial structs through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/8h3vbq47E)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -174,4 +174,4 @@ There are two drawbacks to using `uni_auto`:
 
 ## Playground:
 
-If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/P99fnq17r) you go!
+If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/9jdv48ehz) you go!
