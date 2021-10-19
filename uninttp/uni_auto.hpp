@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v1.2
+ * Version: v1.3
  *
  * Copyright (c) 2021-... reacfen
  *
@@ -51,7 +51,7 @@ namespace uninttp {
         using type = std::conditional_t<IsInitializedAsArray, const T(&)[N], const T&>;
         T values[N] {};
         constexpr uni_auto(const T v) : std::conditional_t<std::is_class_v<T>, T, detail::dummy>{v}, values{v} {}
-        constexpr uni_auto(const T* v) : std::conditional_t<std::is_class_v<T>, T, detail::dummy>{} {
+        constexpr uni_auto(const T* v) : std::conditional_t<std::is_class_v<T>, T, detail::dummy>{0} {
             for (std::size_t i = 0; i < N; i++)
                 values[i] = v[i];
         }
