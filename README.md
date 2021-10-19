@@ -27,13 +27,14 @@ int main() {
 
 And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/recr1qehK)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/65czTG76z)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
+#include <string_view>
 #include <iostream>
 #include <cstddef>
-#include <cstring>
+#include <array>
 
 using namespace uninttp;
 
@@ -46,6 +47,7 @@ template <uni_auto Array>
 void print_array() {
     for (auto const& elem : Array)
         std::cout << elem << " ";
+    std::cout << std::endl;
     /*
     If you want to write an index-based for-loop, you can do so like this:
     (Keep in mind that 'uni_auto_v' is required here as the compiler cannot do implicit
@@ -53,20 +55,24 @@ void print_array() {
 
     for (std::size_t i = 0; i < std::size( uni_auto_v<Array> ); i++)
         std::cout << Array[i] << " ";
+    std::cout << std::endl;
     */
 }
 
 int main() {
     // Passing a string literal
-    static_assert(std::strcmp(shift<"foobar", 3>(), "bar") == 0); // OK
+    static_assert(std::string_view(shift<"foobar", 3>()) ==  "bar"); // OK
 
     // Passing an array marked as 'constexpr'
     constexpr int arr[] = { 1, 8, 9, 20 };
-    print_array<arr>();                                           // 1 8 9 20
+    print_array<arr>();                                              // 1 8 9 20
+
+    // Passing an 'std::array' object
+    print_array<std::array { 1, 4, 6, 9 }>();                        // 1 4 6 9
 }
 ```
 
-You can also use it with parameter packs, obviously: [<kbd>Demo</kbd>](https://godbolt.org/z/YGhvdxf5M)
+You can also use it with parameter packs, obviously: [<kbd>Demo</kbd>](https://godbolt.org/z/3Eax886zT)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -76,7 +82,7 @@ using namespace uninttp;
 
 template <uni_auto ...Values>
 void print() {
-    ((std::cout << Values << " "), ...);
+    ((std::cout << Values << " "), ...) << std::endl;
 }
 
 int main() {

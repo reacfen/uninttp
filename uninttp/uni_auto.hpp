@@ -35,12 +35,14 @@
 #define UNINTTP_UNI_AUTO_HPP
 
 #include <type_traits>
+#include <iterator>
 #include <cstddef>
 
 namespace uninttp {
     template <typename T, std::size_t N = 1, bool IsInitializedAsArray = false>
     struct uni_auto {
         using type = std::conditional_t<IsInitializedAsArray, const T(&)[N], const T&>;
+        T values[N] {};
         constexpr uni_auto(const T v) : values{v} {}
         constexpr uni_auto(const T* v) {
             for (std::size_t i = 0; i < N; i++)
@@ -52,15 +54,20 @@ namespace uninttp {
             else
                 return values[0];
         }
-        constexpr const T* begin() const
-        requires (IsInitializedAsArray) {
-            return values;
+        constexpr auto begin() const
+        requires (IsInitializedAsArray || requires { std::begin(values[0]); }) {
+            if constexpr (IsInitializedAsArray)
+                return std::begin(values);
+            else if constexpr (requires { std::begin(values[0]); })
+                return std::begin(values[0]);
         }
-        constexpr const T* end() const
-        requires (IsInitializedAsArray) {
-            return values + N;
+        constexpr auto end() const
+        requires (IsInitializedAsArray || requires { std::end(values[0]); }) {
+            if constexpr (IsInitializedAsArray)
+                return std::end(values);
+            else if constexpr (requires { std::end(values[0]); })
+                return std::end(values[0]);
         }
-        T values[N] {};
     };
     template <typename T, std::size_t N>
     uni_auto(T(&)[N]) -> uni_auto<std::remove_cv_t<T>, N, true>;
