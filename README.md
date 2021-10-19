@@ -25,9 +25,9 @@ int main() {
 }
 ```
 
-And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be completely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
+And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with`uni_auto` can do much more than `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/575PGfjjf)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/575PGfjjf)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
