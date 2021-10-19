@@ -41,9 +41,9 @@
 #include <cstddef>
 
 namespace uninttp {
-    template <typename T, std::size_t N = 1, bool IsInitializedAsArray = false, bool IsEligibleForUniClass = false>
+    template <typename T, std::size_t N = 1, bool IsInitializedAsArray = false, bool = false>
     struct uni_auto {
-        using type = std::conditional_t<IsInitializedAsArray, const T(&)[N], const T&>;
+        using type = std::conditional_t<IsInitializedAsArray, const T[N], const T>&;
         T values[N] {};
 
         constexpr uni_auto(const T& v) : values{v} {}
@@ -52,7 +52,7 @@ namespace uninttp {
                 values[i] = v[i];
         }
 
-        constexpr operator const type&() const {
+        constexpr operator type() const {
             if constexpr (IsInitializedAsArray)
                 return values;
             else
@@ -80,10 +80,6 @@ namespace uninttp {
         using type = const T&;
 
         constexpr uni_auto(const T& v) : T{v} {}
-
-        constexpr operator const type&() const {
-            return *this;
-        }
     };
 
     template <typename T, std::size_t N>
