@@ -54,18 +54,22 @@ namespace uninttp {
             else
                 return values[0];
         }
+        constexpr auto operator[](const std::size_t i) const
+        requires requires { values[0][i]; } {
+            return values[0][i];
+        }
         constexpr auto begin() const
         requires (IsInitializedAsArray || requires { std::begin(values[0]); }) {
             if constexpr (IsInitializedAsArray)
                 return std::begin(values);
-            else if constexpr (requires { std::begin(values[0]); })
+            else
                 return std::begin(values[0]);
         }
         constexpr auto end() const
         requires (IsInitializedAsArray || requires { std::end(values[0]); }) {
             if constexpr (IsInitializedAsArray)
                 return std::end(values);
-            else if constexpr (requires { std::end(values[0]); })
+            else
                 return std::end(values[0]);
         }
     };
