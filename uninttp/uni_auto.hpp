@@ -50,7 +50,7 @@ namespace uninttp {
             if constexpr (IsInitializedAsArray)
                 return values;
             else
-                return *values;
+                return values[0];
         }
         constexpr const T* begin() const
         requires (IsInitializedAsArray) {
