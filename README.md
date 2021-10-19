@@ -187,6 +187,13 @@ int main() {
 
 All the examples shown have used function templates to demonstrate the capability of `uni_auto`. However, it can readily be used in any context.
 
+## Cheat sheet:
+
+| | Description |
+| --- | --- |
+| `uni_auto_t<uni_auto Value>` | Gives the type of the underlying value held by the `uni_auto` class object passed to it. |
+| `uni_auto_v<uni_auto Value>` | Effectively extracts the underlying value held by the `uni_auto` class object passed to it. |
+
 ## Limitations:
 
 There are two drawbacks to using `uni_auto`:
