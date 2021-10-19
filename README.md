@@ -141,7 +141,7 @@ int main() {
 > }
 > ```
 
-Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/8h3vbq47E)
+Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/reT6eEjj6)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -158,9 +158,7 @@ struct Y {
 
 template <uni_auto A, uni_auto B>
 constexpr auto mul() {
-    /* 'uni_auto_v' needs to be used here to get the underlying value held by 'A' and 'B' as
-        the compiler won't be able to help us here */
-    return uni_auto_v<A>.val * uni_auto_v<B>.val;
+    return A.val * B.val;
 }
 
 int main() {

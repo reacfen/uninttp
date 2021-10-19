@@ -41,16 +41,18 @@
 #include <cstddef>
 
 namespace uninttp {
+    namespace detail {
+        struct dummy {};
+    }
     template <typename T, std::size_t N = 1, bool IsInitializedAsArray = false>
-    struct uni_auto {
+    struct uni_auto : public std::conditional_t<std::is_class_v<T>, T, detail::dummy> {
         using type = std::conditional_t<IsInitializedAsArray, const T(&)[N], const T&>;
         T values[N] {};
-        constexpr uni_auto(const T v) : values{v} {}
-        constexpr uni_auto(const T* v) {
+        constexpr uni_auto(const T v) : std::conditional_t<std::is_class_v<T>, T, detail::dummy>{}, values{v} {}
+        constexpr uni_auto(const T* v) : std::conditional_t<std::is_class_v<T>, T, detail::dummy>{} {
             for (std::size_t i = 0; i < N; i++)
                 values[i] = v[i];
         }
-        
         constexpr operator type() const {
             if constexpr (IsInitializedAsArray)
                 return values;
@@ -232,7 +234,6 @@ namespace uninttp {
         requires (std::is_class_v<std::decay_t<type>> && requires { values[0]->*rhs; }) {
             return values[0]->*rhs;
         }
-
         constexpr auto operator()(auto... args) const
         requires (std::is_class_v<std::decay_t<type>> && requires { values[0](args...); }) {
             return values[0](args...);
@@ -243,18 +244,18 @@ namespace uninttp {
         }
 
         constexpr auto begin() const
-        requires (IsInitializedAsArray || requires { std::begin(values[0]); }) {
+        requires (IsInitializedAsArray || requires { std::cbegin(values[0]); }) {
             if constexpr (IsInitializedAsArray)
-                return std::begin(values);
+                return std::cbegin(values);
             else
-                return std::begin(values[0]);
+                return std::cbegin(values[0]);
         }
         constexpr auto end() const
-        requires (IsInitializedAsArray || requires { std::end(values[0]); }) {
+        requires (IsInitializedAsArray || requires { std::cend(values[0]); }) {
             if constexpr (IsInitializedAsArray)
-                return std::end(values);
+                return std::cend(values);
             else
-                return std::end(values[0]);
+                return std::cend(values[0]);
         }
     };
     template <typename T, std::size_t N>
