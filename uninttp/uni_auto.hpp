@@ -38,6 +38,7 @@
 
 #include <type_traits>
 #include <iterator>
+#include <concepts>
 #include <cstddef>
 
 namespace uninttp {
@@ -56,7 +57,7 @@ namespace uninttp {
             else
                 return values[0];
         }
-        constexpr auto operator[](const std::size_t i) const
+        constexpr auto operator[](const std::integral auto i) const
         requires requires { values[0][i]; } {
             return values[0][i];
         }
