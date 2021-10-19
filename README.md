@@ -189,7 +189,7 @@ All the examples shown have used function templates to demonstrate the capabilit
 
 ## Cheat sheet:
 
-| | Description |
+| <img width=300/> | Description |
 | --- | --- |
 | `uni_auto_t<uni_auto Value>` | Gives the type of the underlying value held by the `uni_auto` class object passed to it. |
 | `uni_auto_v<uni_auto Value>` | Effectively extracts the underlying value held by the `uni_auto` class object passed to it. |
