@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v1.3
+ * Version: v1.4
  *
  * Copyright (c) 2021-... reacfen
  *
@@ -41,21 +41,18 @@
 #include <cstddef>
 
 namespace uninttp {
-    namespace detail {
-        struct dummy {
-            constexpr dummy(auto) {}
-        };
-    }
-    template <typename T, std::size_t N = 1, bool IsInitializedAsArray = false>
-    struct uni_auto : public std::conditional_t<!IsInitializedAsArray && N == 1 && std::is_class_v<T>, T, detail::dummy> {
+    template <typename T, std::size_t N = 1, bool IsInitializedAsArray = false, bool IsEligibleForUniClass = false>
+    struct uni_auto {
         using type = std::conditional_t<IsInitializedAsArray, const T(&)[N], const T&>;
         T values[N] {};
-        constexpr uni_auto(const T v) : std::conditional_t<std::is_class_v<T>, T, detail::dummy>{v}, values{v} {}
-        constexpr uni_auto(const T* v) : std::conditional_t<std::is_class_v<T>, T, detail::dummy>{0} {
+
+        constexpr uni_auto(const T& v) : values{v} {}
+        constexpr uni_auto(const T* v) {
             for (std::size_t i = 0; i < N; i++)
                 values[i] = v[i];
         }
-        constexpr operator type() const {
+
+        constexpr operator const type&() const {
             if constexpr (IsInitializedAsArray)
                 return values;
             else
@@ -77,10 +74,27 @@ namespace uninttp {
                 return std::cend(values[0]);
         }
     };
+
+    template <typename T>
+    struct uni_auto<T, 1, false, true> : T {
+        using type = const T&;
+
+        constexpr uni_auto(const T& v) : T{v} {}
+
+        constexpr operator const type&() const {
+            return *this;
+        }
+    };
+
     template <typename T, std::size_t N>
-    uni_auto(T(&)[N]) -> uni_auto<std::remove_cv_t<T>, N, true>;
+    uni_auto(T(&)[N]) -> uni_auto<std::remove_cv_t<T>, N, true, false>;
+    template <typename T>
+    requires (std::is_class_v<T>)
+    uni_auto(T) -> uni_auto<std::remove_cv_t<T>, 1, false, true>;
+
     template <uni_auto Value>
     using uni_auto_t = typename decltype(Value)::type;
+
     template <uni_auto Value>
     constexpr auto& uni_auto_v = static_cast<uni_auto_t<Value>>(Value);
 }
