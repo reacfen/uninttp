@@ -39,42 +39,60 @@
 #include <type_traits>
 #include <iterator>
 #include <cstddef>
+#include <utility>
+
+#ifdef UNINTTP_USE_STD_ARRAY
+    #include <array>
+    namespace uninttp {
+        template <typename T, std::size_t N = 1, bool IsInitializedAsArray = false, bool = false>
+        struct uni_auto : public std::array<T, N> {
+            using type = std::conditional_t<IsInitializedAsArray, std::array<T, N>, T>;
+
+            constexpr uni_auto(const T& v) : std::array<T, N>{v} {}
+            template <std::size_t ...Indices>
+            constexpr uni_auto(const T* v, std::index_sequence<Indices...>) : std::array<T, N>{ v[Indices]... } {}
+            constexpr uni_auto(const T* v) : uni_auto(v, std::make_index_sequence<N>()) {}
+
+            constexpr operator type() const {
+                if constexpr (IsInitializedAsArray)
+                    return *this;
+                else
+                    return *this[0];
+            }
+        };
+    }
+#else
+    namespace uninttp {
+        template <typename T, std::size_t N = 1, bool IsInitializedAsArray = false, bool = false>
+        struct uni_auto {
+            using type = std::conditional_t<IsInitializedAsArray, const T[N], const T>&;
+            const T values[N];
+
+            constexpr uni_auto(const T& v) : values{v} {}
+            template <std::size_t ...Indices>
+            constexpr uni_auto(const T* v, std::index_sequence<Indices...>) : values{ v[Indices]... } {}
+            constexpr uni_auto(const T* v) : uni_auto(v, std::make_index_sequence<N>()) {}
+
+            constexpr operator type() const {
+                if constexpr (IsInitializedAsArray)
+                    return values;
+                else
+                    return values[0];
+            }
+
+            constexpr auto begin() const
+            requires (IsInitializedAsArray) {
+                return std::cbegin(values);
+            }
+            constexpr auto end() const
+            requires (IsInitializedAsArray) {
+                return std::cend(values);
+            }
+        };
+    }
+#endif
 
 namespace uninttp {
-    template <typename T, std::size_t N = 1, bool IsInitializedAsArray = false, bool = false>
-    struct uni_auto {
-        using type = std::conditional_t<IsInitializedAsArray, const T[N], const T>&;
-        T values[N] {};
-
-        constexpr uni_auto(const T& v) : values{v} {}
-        constexpr uni_auto(const T* v) {
-            for (std::size_t i = 0; i < N; i++)
-                values[i] = v[i];
-        }
-
-        constexpr operator type() const {
-            if constexpr (IsInitializedAsArray)
-                return values;
-            else
-                return values[0];
-        }
-
-        constexpr auto begin() const
-        requires (IsInitializedAsArray || requires { std::cbegin(values[0]); }) {
-            if constexpr (IsInitializedAsArray)
-                return std::cbegin(values);
-            else
-                return std::cbegin(values[0]);
-        }
-        constexpr auto end() const
-        requires (IsInitializedAsArray || requires { std::cend(values[0]); }) {
-            if constexpr (IsInitializedAsArray)
-                return std::cend(values);
-            else
-                return std::cend(values[0]);
-        }
-    };
-
     template <typename T>
     struct uni_auto<T, 1, false, true> : public T {
         using type = const T&;
@@ -91,8 +109,16 @@ namespace uninttp {
     template <uni_auto Value>
     using uni_auto_t = typename decltype(Value)::type;
 
+#ifdef UNINTTP_USE_STD_ARRAY
+    template <uni_auto Value>
+    constexpr auto uni_auto_v = static_cast<uni_auto_t<Value>>(Value);
+#else
     template <uni_auto Value>
     constexpr auto& uni_auto_v = static_cast<uni_auto_t<Value>>(Value);
+#endif
+
+    template <uni_auto Value>
+    constexpr auto uni_auto_len = std::size(uni_auto_v<Value>);
 }
 
 #endif /* UNINTTP_UNI_AUTO_HPP */

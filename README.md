@@ -112,6 +112,8 @@ int main() {
 }
 ```
 
+The above can also be modified to work with `std::array`, [here](https://godbolt.org/z/xYd61YhEK)'s an example.
+
 > **Note**: One can also "*exploit*" the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/j6rGh4hr8)
 > 
 > ```cpp
@@ -209,6 +211,17 @@ There are two drawbacks to using `uni_auto`:
     // ...
     ```
 
+## Tell uninttp that you'd like to use `std::array` instead of normal C-style arrays:
+
+It is completely up to the choice of the user to choose between working with C-style arrays or `std::array`, the former is used by uninttp by default. In order to use the latter, one needs to define `UNINTTP_USE_STD_ARRAY` before including any of uninttp's header(s):
+
+```cpp
+#define UNINTTP_USE_STD_ARRAY
+#include <uninttp/uni_auto.hpp>
+
+// Now 'uninttp::uni_auto' and co. will use 'std::array' instead of C-Style arrays to store their value(s)...
+```
+
 ## Playground:
 
-If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/9jdv48ehz) you go!
+If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/r7qhvGP4a) you go!
