@@ -42,13 +42,15 @@
 
 namespace uninttp {
     namespace detail {
-        struct dummy {};
+        struct dummy {
+            constexpr dummy(auto) {}
+        };
     }
     template <typename T, std::size_t N = 1, bool IsInitializedAsArray = false>
-    struct uni_auto : public std::conditional_t<std::is_class_v<T>, T, detail::dummy> {
+    struct uni_auto : public std::conditional_t<!IsInitializedAsArray && N == 1 && std::is_class_v<T>, T, detail::dummy> {
         using type = std::conditional_t<IsInitializedAsArray, const T(&)[N], const T&>;
         T values[N] {};
-        constexpr uni_auto(const T v) : std::conditional_t<std::is_class_v<T>, T, detail::dummy>{}, values{v} {}
+        constexpr uni_auto(const T v) : std::conditional_t<std::is_class_v<T>, T, detail::dummy>{v}, values{v} {}
         constexpr uni_auto(const T* v) : std::conditional_t<std::is_class_v<T>, T, detail::dummy>{} {
             for (std::size_t i = 0; i < N; i++)
                 values[i] = v[i];
@@ -58,189 +60,6 @@ namespace uninttp {
                 return values;
             else
                 return values[0];
-        }
-
-        constexpr auto operator=(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] = rhs; }) {
-            return values[0] = rhs;
-        }
-        constexpr auto operator+=(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] += rhs; }) {
-            return values[0] += rhs;
-        }
-        constexpr auto operator-=(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] -= rhs; }) {
-            return values[0] -= rhs;
-        }
-        constexpr auto operator*=(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] *= rhs; }) {
-            return values[0] *= rhs;
-        }
-        constexpr auto operator/=(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] /= rhs; }) {
-            return values[0] /= rhs;
-        }
-        constexpr auto operator%=(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] %= rhs; }) {
-            return values[0] %= rhs;
-        }
-        constexpr auto operator&=(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] &= rhs; }) {
-            return values[0] &= rhs;
-        }
-        constexpr auto operator|=(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] |= rhs; }) {
-            return values[0] |= rhs;
-        }
-        constexpr auto operator^=(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] ^= rhs; }) {
-            return values[0] ^= rhs;
-        }
-        constexpr auto operator<<=(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] <<= rhs; }) {
-            return values[0] <<= rhs;
-        }
-        constexpr auto operator>>=(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] >>= rhs; }) {
-            return values[0] >>= rhs;
-        }
-
-        constexpr auto operator++() const
-        requires (std::is_class_v<std::decay_t<type>> && requires { ++values[0]; }) {
-            return ++values[0];
-        }
-        constexpr auto operator++(int) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0]++; }) {
-            return values[0]++;
-        }
-        constexpr auto operator--() const
-        requires (std::is_class_v<std::decay_t<type>> && requires { --values[0]; }) {
-            return --values[0];
-        }
-        constexpr auto operator--(int) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { --values[0]; }) {
-            return --values[0];
-        }
-
-        constexpr auto operator+() const
-        requires (std::is_class_v<std::decay_t<type>> && requires { +values[0]; }) {
-            return +values[0];
-        }
-        constexpr auto operator-() const
-        requires (std::is_class_v<std::decay_t<type>> && requires { -values[0]; }) {
-            return -values[0];
-        }
-        constexpr auto operator+(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] + rhs; }) {
-            return values[0] + rhs;
-        }
-        constexpr auto operator-(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] - rhs; }) {
-            return values[0] - rhs;
-        }
-        constexpr auto operator*(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] * rhs; }) {
-            return values[0] * rhs;
-        }
-        constexpr auto operator/(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] / rhs; }) {
-            return values[0] / rhs;
-        }
-        constexpr auto operator%(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] % rhs; }) {
-            return values[0] % rhs;
-        }
-        constexpr auto operator~() const
-        requires (std::is_class_v<std::decay_t<type>> && requires { ~values[0]; }) {
-            return ~values[0];
-        }
-        constexpr auto operator&(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] & rhs; }) {
-            return values[0] & rhs;
-        }
-        constexpr auto operator|(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] | rhs; }) {
-            return values[0] | rhs;
-        }
-        constexpr auto operator^(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] ^ rhs; }) {
-            return values[0] ^ rhs;
-        }
-        constexpr auto operator<<(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] << rhs; }) {
-            return values[0] << rhs;
-        }
-        constexpr auto operator>>(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] >> rhs; }) {
-            return values[0] >> rhs;
-        }
-
-        constexpr auto operator!() const
-        requires (std::is_class_v<std::decay_t<type>> && requires { !values[0]; }) {
-            return !values[0];
-        }
-        constexpr auto operator&&(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] && rhs; }) {
-            return values[0] && rhs;
-        }
-        constexpr auto operator||(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] || rhs; }) {
-            return values[0] || rhs;
-        }
-        
-        constexpr auto operator==(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] == rhs; }) {
-            return values[0] == rhs;
-        }
-        constexpr auto operator!=(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] != rhs; }) {
-            return values[0] != rhs;
-        }
-        constexpr auto operator<(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] < rhs; }) {
-            return values[0] < rhs;
-        }
-        constexpr auto operator>(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] > rhs; }) {
-            return values[0] > rhs;
-        }
-        constexpr auto operator<=(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] <= rhs; }) {
-            return values[0] <= rhs;
-        }
-        
-        constexpr auto operator>=(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0] >= rhs; }) {
-            return values[0] >= rhs;
-        }
-        
-        constexpr auto operator[](auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0][rhs]; }) {
-            return values[0][rhs];
-        }
-        constexpr auto operator*() const
-        requires (std::is_class_v<std::decay_t<type>> && requires { *values[0]; }) {
-            return *values[0];
-        }
-        constexpr auto operator&() const
-        requires (std::is_class_v<std::decay_t<type>> && requires { &values[0]; }) {
-            return &values[0];
-        }
-        constexpr auto operator->() const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0].operator->(); }) {
-            return values[0].operator->();
-        }
-        constexpr auto operator->*(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0]->*rhs; }) {
-            return values[0]->*rhs;
-        }
-        constexpr auto operator()(auto... args) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0](args...); }) {
-            return values[0](args...);
-        }
-        constexpr auto operator,(auto rhs) const
-        requires (std::is_class_v<std::decay_t<type>> && requires { values[0].operator,(rhs); }) {
-            return values[0].operator,(rhs);
         }
 
         constexpr auto begin() const
