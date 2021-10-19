@@ -27,7 +27,7 @@ int main() {
 
 And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/65czTG76z)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/P5MrM7xzs)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -45,23 +45,32 @@ constexpr auto shift() {
 
 template <uni_auto Array>
 void print_array() {
+    // Using range-based for loop
     for (auto const& elem : Array)
         std::cout << elem << " ";
     std::cout << std::endl;
-    /*
-    If you want to write an index-based for-loop, you can do so like this:
-    (Keep in mind that 'uni_auto_v' is required here as the compiler cannot do implicit
-     conversions in this context)
 
-    for (std::size_t i = 0; i < std::size( uni_auto_v<Array> ); i++)
+    // Using iterators
+    for (auto it = std::begin(Array); it != std::end(Array); ++it)
+        std::cout << *it << " ";
+    std::cout << std::endl;
+
+    // Index-based for loop (1st version)
+    /* (The usage of 'uni_auto_v' is required here as the compiler cannot do implicit
+        conversions in this context) */
+    for (std::size_t i = 0; i < std::size(uni_auto_v<Array>); i++)
         std::cout << Array[i] << " ";
     std::cout << std::endl;
-    */
+
+    // Index-based for loop (2nd version)
+    for (std::size_t i = 0; i < uni_auto_len<Array>; i++)
+        std::cout << Array[i] << " ";
+    std::cout << std::endl;
 }
 
 int main() {
     // Passing a string literal
-    static_assert(std::string_view(shift<"foobar", 3>()) ==  "bar"); // OK
+    static_assert(std::string_view(shift<"foobar", 3>()) == "bar");  // OK
 
     // Passing an array marked as 'constexpr'
     constexpr int arr[] = { 1, 8, 9, 20 };
@@ -168,7 +177,7 @@ int main() {
 }
 ```
 
-You can also pass lambdas through the template argument as well: [<kbd>Demo</kbd>](https://godbolt.org/z/GPaqbdj9a)
+You can also pass lambdas and compile-time functor objects through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/9zjPnz6zc)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -180,8 +189,15 @@ constexpr auto call() {
     return F();
 }
 
+struct Funct {
+    constexpr auto operator()() const {
+        return 86;
+    }
+};
+
 int main() {
     static_assert(call<[] { return 69; }>() == 69); // OK
+    static_assert(call<Funct{}>() == 86);           // OK
 }
 ```
 
@@ -189,10 +205,11 @@ All the examples shown have used function templates to demonstrate the capabilit
 
 ## Cheat sheet:
 
-| <img width=300/> | Description |
+| <img width=400/> | Description |
 | --- | --- |
-| `uni_auto_t<uni_auto Value>` | Gives the type of the underlying value held by the `uni_auto` class object passed to it. |
-| `uni_auto_v<uni_auto Value>` | Effectively extracts the underlying value held by the `uni_auto` class object passed to it. |
+| `uninttp::uni_auto_t<uni_auto Value>` | Gives the type of the underlying value held by the `uni_auto` class object passed to it. |
+| `uninttp::uni_auto_v<uni_auto Value>` | Effectively extracts the underlying value held by the `uni_auto` class object passed to it. |
+| `uninttp::uni_auto_len<uni_auto Value>` | As the name suggests, it returns the length/size of the array held by `uni_auto` (if any).<br/>*Equivalent to*: `std::size(uni_auto_v<Value>)`. |
 
 ## Limitations:
 
