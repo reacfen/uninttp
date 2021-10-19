@@ -166,6 +166,23 @@ int main() {
 }
 ```
 
+You can also pass lambdas through the template argument as well: [<kbd>Demo</kbd>](https://godbolt.org/z/GPaqbdj9a)
+
+```cpp
+#include <uninttp/uni_auto.hpp>
+
+using namespace uninttp;
+
+template <uni_auto F>
+constexpr auto call() {
+    return F();
+}
+
+int main() {
+    static_assert(call<[] { return 69; }>() == 69); // OK
+}
+```
+
 All the examples shown have used function templates to demonstrate the capability of `uni_auto`. However, it can readily be used in any context.
 
 ## Limitations:
