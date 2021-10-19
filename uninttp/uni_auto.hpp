@@ -50,6 +50,7 @@ namespace uninttp {
             for (std::size_t i = 0; i < N; i++)
                 values[i] = v[i];
         }
+        
         constexpr operator type() const {
             if constexpr (IsInitializedAsArray)
                 return values;
@@ -231,6 +232,7 @@ namespace uninttp {
         requires (std::is_class_v<std::decay_t<type>> && requires { values[0]->*rhs; }) {
             return values[0]->*rhs;
         }
+
         constexpr auto operator()(auto... args) const
         requires (std::is_class_v<std::decay_t<type>> && requires { values[0](args...); }) {
             return values[0](args...);
