@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v1.6
+ * Version: v1.7
  *
  * Copyright (c) 2021-... reacfen
  *
@@ -48,7 +48,7 @@
         struct uni_auto : public std::array<T, N> {
             using type = std::conditional_t<IsInitializedAsArray, std::array<T, N>, T>;
 
-            constexpr uni_auto(const T& v) : std::array<T, N>{v} {}
+            constexpr uni_auto(const T v) : std::array<T, N>{v} {}
             template <std::size_t ...Indices>
             constexpr uni_auto(const T* v, std::index_sequence<Indices...>) : std::array<T, N>{ v[Indices]... } {}
             constexpr uni_auto(const T* v) : uni_auto(v, std::make_index_sequence<N>()) {}
@@ -57,7 +57,11 @@
                 if constexpr (IsInitializedAsArray)
                     return *this;
                 else
-                    return *this[0];
+                    return (*this)[0];
+            }
+            constexpr operator const T*() const
+            requires IsInitializedAsArray {
+                return this->data();
             }
         };
     }
@@ -68,7 +72,7 @@
             using type = std::conditional_t<IsInitializedAsArray, const T[N], const T>&;
             const T values[N];
 
-            constexpr uni_auto(const T& v) : values{v} {}
+            constexpr uni_auto(const T v) : values{v} {}
             template <std::size_t ...Indices>
             constexpr uni_auto(const T* v, std::index_sequence<Indices...>) : values{ v[Indices]... } {}
             constexpr uni_auto(const T* v) : uni_auto(v, std::make_index_sequence<N>()) {}
@@ -81,11 +85,11 @@
             }
 
             constexpr auto begin() const
-            requires (IsInitializedAsArray) {
+            requires IsInitializedAsArray {
                 return std::cbegin(values);
             }
             constexpr auto end() const
-            requires (IsInitializedAsArray) {
+            requires IsInitializedAsArray {
                 return std::cend(values);
             }
         };
@@ -103,7 +107,7 @@ namespace uninttp {
     template <typename T, std::size_t N>
     uni_auto(T(&)[N]) -> uni_auto<std::remove_cv_t<T>, N, true, false>;
     template <typename T>
-    requires (std::is_class_v<T>)
+    requires std::is_class_v<T>
     uni_auto(T) -> uni_auto<std::remove_cv_t<T>, 1, false, true>;
 
     template <uni_auto Value>
@@ -119,6 +123,25 @@ namespace uninttp {
 
     template <uni_auto Value>
     constexpr auto uni_auto_len = std::size(uni_auto_v<Value>);
+
+    namespace detail {
+        template <typename, uni_auto Value>
+        struct uni_auto_simplify_v_impl;
+        template <typename T, bool IsClassType, uni_auto Value>
+        struct uni_auto_simplify_v_impl<uni_auto<T, 1, false, IsClassType>, Value> {
+            static constexpr auto value = uni_auto_v<Value>;
+        };
+        template <typename T, std::size_t N, uni_auto Value>
+        struct uni_auto_simplify_v_impl<uni_auto<T, N, true, false>, Value> {
+            static constexpr auto value = static_cast<const T*>(Value);
+        };
+    }
+
+    template <uni_auto Value>
+    constexpr auto uni_auto_simplify_v = detail::uni_auto_simplify_v_impl<std::remove_cv_t<decltype(Value)>, Value>::value;
+
+    template <uni_auto Value>
+    using uni_auto_simplify_t = std::remove_cv_t<decltype(uni_auto_simplify_v<Value>)>;
 }
 
 #endif /* UNINTTP_UNI_AUTO_HPP */
