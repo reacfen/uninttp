@@ -202,13 +202,13 @@ All the examples shown have used function templates to demonstrate the capabilit
 
 ## Cheat sheet:
 
-| <img width=3000/> | Description |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Description |
 | --- | --- |
-| `uninttp::uni_auto_t<uni_auto Value>` | Gives the type of the underlying value held by the `uni_auto` class object passed to it. |
-| `uninttp::uni_auto_simplify_t<uni_auto Value>` | Gives the decayed type of the value held by the `uni_auto` class object. If the `uni_auto` object holds an array, it condenses it into a pointer and returns the pointer as the type. This is mostly useful for doing portable compile-time type-checking and other things related to SFINAE.<br/><br/>*Equivalent to*: `std::remove_cv_t<decltype(uni_auto_simplify_v<Value>)>` |
-| `uninttp::uni_auto_v<uni_auto Value>` | Effectively extracts the underlying value held by the `uni_auto` class object passed to it. |
+| `uninttp::uni_auto_t<uni_auto Value>` | Gives the type of the underlying value held by the `uni_auto` object passed to it. |
+| `uninttp::uni_auto_simplify_t<uni_auto Value>` | Gives the decayed type of the value held by the `uni_auto` object.<br/>If the `uni_auto` object holds an array, it decays it into a pointer and returns the pointer as the type.<br/>This feature is often useful for doing compile-time type-checking, SFINAE and for defining certain constraints on the types held by the `uni_auto` object.<br/><br/>***Equivalent to***: `std::remove_cv_t<decltype(uni_auto_simplify_v<Value>)>` |
+| `uninttp::uni_auto_v<uni_auto Value>` | Effectively extracts the underlying value held by the `uni_auto` object passed to it. |
 | `uninttp::uni_auto_simplify_v<uni_auto Value>` | Converts the underlying value of the `uni_auto` object into its simplest form. If the value held is an array, it converts it into a pointer and returns that, otherwise it does the exact same thing as `uni_auto_v`. |
-| `uninttp::uni_auto_len<uni_auto Value>` | As the name suggests, it returns the length/size of the array held by `uni_auto` (if any).<br/><br/>*Equivalent to*: `std::size(uni_auto_v<Value>)`. |
+| `uninttp::uni_auto_len<uni_auto Value>` | As the name suggests, it returns the length/size of the array held by `uni_auto` (if any).<br/><br/>***Equivalent to***: `std::size(uni_auto_v<Value>)`. |
 
 ## Limitations:
 
@@ -241,13 +241,33 @@ There are two drawbacks to using `uni_auto`:
 
 ## Tell uninttp that you'd like to use `std::array` instead of normal C-style arrays:
 
-It is completely up to the choice of the user to choose between working with C-style arrays or `std::array`, the former is used by uninttp by default. In order to use the latter, one needs to define `UNINTTP_USE_STD_ARRAY` before including any of uninttp's header(s):
+It is completely up to the choice of the user to choose between working with C-style arrays or `std::array`, the former is used by uninttp by default. In order to use the latter, one needs to define `UNINTTP_USE_STD_ARRAY` before including any of uninttp's header(s): [<kbd>Demo</kbd>](https://godbolt.org/z/xP7d7W7KP)
 
 ```cpp
 #define UNINTTP_USE_STD_ARRAY
 #include <uninttp/uni_auto.hpp>
 
 // Now 'uninttp::uni_auto' and co. will use 'std::array' instead of C-Style arrays to store their value(s)...
+
+#include <iostream>
+#include <cstddef>
+#include <array>
+
+using namespace uninttp;
+
+template <typename T, std::size_t N>
+void fun1(std::array<T, N> const& a) {
+    std::cout << a.data() << std::endl;
+}
+
+template <uni_auto U>
+void fun2() {
+    fun1(U);
+}
+
+int main() {
+    fun2<"Hello from std::array!">();
+}
 ```
 
 ## Playground:
