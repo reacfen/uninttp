@@ -27,7 +27,7 @@ int main() {
 
 And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/P5MrM7xzs)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/4eMfK8KEW)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -48,11 +48,13 @@ void print_array() {
     // Using range-based for loop
     for (auto const& elem : Array)
         std::cout << elem << " ";
+    
     std::cout << std::endl;
 
     // Using iterators
     for (auto it = std::begin(Array); it != std::end(Array); ++it)
         std::cout << *it << " ";
+    
     std::cout << std::endl;
 
     // Index-based for loop (1st version)
@@ -60,24 +62,26 @@ void print_array() {
         conversions in this context) */
     for (std::size_t i = 0; i < std::size(uni_auto_v<Array>); i++)
         std::cout << Array[i] << " ";
+    
     std::cout << std::endl;
 
     // Index-based for loop (2nd version)
     for (std::size_t i = 0; i < uni_auto_len<Array>; i++)
         std::cout << Array[i] << " ";
+    
     std::cout << std::endl;
 }
 
 int main() {
     // Passing a string literal
-    static_assert(std::string_view(shift<"foobar", 3>()) == "bar");  // OK
+    static_assert(std::string_view(shift<"foobar", 3>()) == "bar"); // OK
 
     // Passing an array marked as 'constexpr'
     constexpr int arr[] = { 1, 8, 9, 20 };
-    print_array<arr>();                                              // 1 8 9 20
+    print_array<arr>();                                             // 1 8 9 20
 
     // Passing an 'std::array' object
-    print_array<std::array { 1, 4, 6, 9 }>();                        // 1 4 6 9
+    print_array<std::array { 1, 4, 6, 9 }>();                       // 1 4 6 9
 }
 ```
 
@@ -121,7 +125,7 @@ int main() {
 }
 ```
 
-The above can also be modified to work with `std::array`, [here](https://godbolt.org/z/xYd61YhEK)'s an example.
+The above can also be modified to work with `std::array`, [here](https://godbolt.org/z/5a8db68Eo)'s an example.
 
 > **Note**: One can also "*exploit*" the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/j6rGh4hr8)
 > 
@@ -151,6 +155,8 @@ The above can also be modified to work with `std::array`, [here](https://godbolt
 >     // do_something<12.3>();  // Error!
 > }
 > ```
+>
+> [Example using `std::array`](https://godbolt.org/z/31qx9Mz6P)
 
 Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/reT6eEjj6)
 
