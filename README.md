@@ -8,7 +8,7 @@ uninttp (**Uni**versal **N**on-**T**ype **T**emplate **P**arameters) is a header
 
 ## Usage:
 
-Using uninttp's `uninttp::uni_auto` is pretty straightforward and is synonymous to `auto` in *most* of the cases: [<kbd>Demo</kbd>](https://godbolt.org/z/sbxve5G6M)
+Using uninttp's `uninttp::uni_auto` is pretty straightforward and is synonymous to `auto` in *most* of the cases: [<kbd>Demo</kbd>](https://godbolt.org/z/fhWhaf5hx)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -27,7 +27,7 @@ int main() {
 
 And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/4eMfK8KEW)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/3qz1Yc38c)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -85,7 +85,7 @@ int main() {
 }
 ```
 
-You can also use it with parameter packs, obviously: [<kbd>Demo</kbd>](https://godbolt.org/z/3Eax886zT)
+You can also use it with parameter packs, obviously: [<kbd>Demo</kbd>](https://godbolt.org/z/Kqhr3dYE7)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -103,7 +103,7 @@ int main() {
 }
 ```
 
-You can also enforce a type by adding a constraint: [<kbd>Demo</kbd>](https://godbolt.org/z/oK3sfsTKs)
+You can also enforce a type by adding a constraint: [<kbd>Demo</kbd>](https://godbolt.org/z/ETfG3Y5G5)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -122,7 +122,7 @@ int main() {
 }
 ```
 
-> **Note**: One can also "*exploit*" the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/dvxvxaK86)
+> **Note**: One can also "*exploit*" the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/sW9Thfaex)
 > 
 > ```cpp
 > #include <uninttp/uni_auto.hpp>
@@ -149,7 +149,7 @@ int main() {
 > }
 > ```
 
-Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/reT6eEjj6)
+Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/PzhcoM8eW)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -174,7 +174,7 @@ int main() {
 }
 ```
 
-You can also pass lambdas and compile-time functor objects through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/9zjPnz6zc)
+You can also pass lambdas and compile-time functor objects through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/nbPxTjKz5)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -198,8 +198,76 @@ int main() {
 }
 ```
 
-All the examples shown have used function templates to demonstrate the capability of `uni_auto`. However, it can readily be used in any context.
+And it doesn't end there! `uni_auto` can also work with pointers of almost any type:
 
+Example using a pointer to an object: [<kbd>Demo</kbd>](https://godbolt.org/z/jxM6PoWqj)
+```cpp
+#include <uninttp/uni_auto.hpp>
+#include <iostream>
+
+using namespace uninttp;
+
+template <uni_auto p>
+void print_pointer() {
+    std::cout << p << std::endl; // Prints the location of 'x' in memory
+}
+
+int main() {
+    static constexpr int x = 2;
+    print_pointer<&x>();
+}
+```
+
+Example using function pointers: [<kbd>Demo</kbd>](https://godbolt.org/z/fEPa56a1f)
+```cpp
+#include <uninttp/uni_auto.hpp>
+#include <iostream>
+
+using namespace uninttp;
+
+constexpr auto some_fun() {
+    return 42;
+}
+
+template <uni_auto Func>
+constexpr auto call_fun() {
+    return Func();
+}
+
+int main() {
+    static_assert(call_fun<some_fun>() == 42); // OK
+}
+```
+
+Example using member function pointers: [<kbd>Demo</kbd>](https://godbolt.org/z/K9KK6EcKM)
+```cpp
+#include <uninttp/uni_auto.hpp>
+#include <iostream>
+
+using namespace uninttp;
+
+struct some_class {
+    auto some_member(int& p) const {
+        p = 2;
+    }
+};
+
+template <uni_auto Value>
+auto call_member(some_class const& x, int& y) {
+    (x->*Value)(y); // Alternative: '(x.*uni_auto_v<Value>)(y);'
+}
+
+int main() {
+    some_class x;
+    int y;
+
+    call_member<&some_class::some_member>(x, y);
+
+    std::cout << y << std::endl;
+}
+```
+
+All the examples shown have used function templates to demonstrate the capability of `uni_auto`. However, it can readily be used in any context.
 ## Cheat sheet:
 
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Description |
