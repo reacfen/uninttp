@@ -103,9 +103,11 @@ int main() {
 }
 ```
 
-You can also enforce a type by adding a constraint: [<kbd>Demo</kbd>](https://godbolt.org/z/a3KMT8Ges)
+You can also enforce a type by adding a constraint: [<kbd>Demo</kbd>](https://godbolt.org/z/r9qGYWzaM)
 
 ```cpp
+// Uncomment the line below if you want uninttp to use 'std::array' instead of plain C-Style arrays
+// #define UNINTTP_USE_STD_ARRAY
 #include <uninttp/uni_auto.hpp>
 #include <type_traits>
 #include <concepts>
@@ -113,10 +115,8 @@ You can also enforce a type by adding a constraint: [<kbd>Demo</kbd>](https://go
 using namespace uninttp;
 
 template <uni_auto Value>
-/* You need to use 'uni_auto_t<Value>' to fetch the underlying type held by the value,
-   and since the type returned is in the form of a reference to an array,
-   you would need to decay it to a pointer type in order to do a proper comparison */
-requires (std::same_as<std::decay_t<uni_auto_t<Value>>, const char*>)
+/* 'uni_auto_simplify_t<Values>' gives you the simplified type for type-checking convenience */
+requires std::same_as<uni_auto_simplify_t<Value>, const char*>
 void only_accepts_strings() {}
 
 int main() {
@@ -125,11 +125,11 @@ int main() {
 }
 ```
 
-The above can also be modified to work with `std::array`, [here](https://godbolt.org/z/5a8db68Eo)'s an example.
-
-> **Note**: One can also "*exploit*" the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/j6rGh4hr8)
+> **Note**: One can also "*exploit*" the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/3KacPTvcW)
 > 
 > ```cpp
+> // Uncomment the line below if you want uninttp to use 'std::array' instead of plain C-Style arrays
+> // #define UNINTTP_USE_STD_ARRAY
 > #include <uninttp/uni_auto.hpp>
 > #include <type_traits>
 > #include <concepts>
@@ -137,14 +137,13 @@ The above can also be modified to work with `std::array`, [here](https://godbolt
 > 
 > using namespace uninttp;
 > 
-> template <uni_auto Value>
-> requires (std::same_as<std::decay_t<uni_auto_t<Value>>, const char*>)
+>template <uni_auto Value>
+> requires std::same_as<uni_auto_simplify_t<Value>, const char*>
 > void do_something() {
 >     std::cout << "A string was passed" << std::endl;
 > }
-> 
 > template <uni_auto Value>
-> requires (std::same_as<std::decay_t<uni_auto_t<Value>>, int>)
+> requires std::same_as<uni_auto_simplify_t<Value>, int>
 > void do_something() {
 >     std::cout << "An integer was passed" << std::endl;
 > }
@@ -155,8 +154,6 @@ The above can also be modified to work with `std::array`, [here](https://godbolt
 >     // do_something<12.3>();  // Error!
 > }
 > ```
->
-> [Example using `std::array`](https://godbolt.org/z/31qx9Mz6P)
 
 Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/reT6eEjj6)
 
@@ -211,10 +208,12 @@ All the examples shown have used function templates to demonstrate the capabilit
 
 ## Cheat sheet:
 
-| <img width=400/> | Description |
+| <img width=1000/> | Description |
 | --- | --- |
 | `uninttp::uni_auto_t<uni_auto Value>` | Gives the type of the underlying value held by the `uni_auto` class object passed to it. |
+| `uninttp::uni_auto_simplify_t<uni_auto Value>` | Gives the decayed type of the value held by the `uni_auto` class object. If the `uni_auto` object holds an array, it condenses it into a pointer and returns the pointer as the type. This is mostly useful for doing compile-time type-checking and SFINAE.<br/>*Equivalent to*: `decltype(uni_auto_simplify_v<Value>)` |
 | `uninttp::uni_auto_v<uni_auto Value>` | Effectively extracts the underlying value held by the `uni_auto` class object passed to it. |
+| `uninttp::uni_auto_simplify_v<uni_auto Value>` | Converts the underlying value of the `uni_auto` object into its simplest form. If the value held is an array, it converts it into a pointer and returns that, otherwise it does the exact same thing as `uni_auto_v`. |
 | `uninttp::uni_auto_len<uni_auto Value>` | As the name suggests, it returns the length/size of the array held by `uni_auto` (if any).<br/>*Equivalent to*: `std::size(uni_auto_v<Value>)`. |
 
 ## Limitations:
