@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v1.8
+ * Version: v1.9
  *
  * Copyright (c) 2021-... reacfen
  *
@@ -48,13 +48,10 @@
         struct uni_auto : public std::array<T, N> {
             using type = std::conditional_t<IsInitializedAsArray, std::array<T, N>, T>;
 
-            constexpr uni_auto(T v) : std::array<T, N>{ std::move(v) } {}
+            constexpr uni_auto(T v) : std::array<T, N>{ v } {}
             template <std::size_t ...Indices>
             constexpr uni_auto(const T(&v)[N], std::index_sequence<Indices...>) : std::array<T, N>{ v[Indices]... } {}
             constexpr uni_auto(const T(&v)[N]) : uni_auto(v, std::make_index_sequence<N>()) {}
-            template <std::size_t ...Indices>
-            constexpr uni_auto(const T(&&v)[N], std::index_sequence<Indices...>) : std::array<T, N>{ std::move(v[Indices])... } {}
-            constexpr uni_auto(const T(&&v)[N]) : uni_auto(v, std::make_index_sequence<N>()) {}
 
             constexpr operator type() const {
                 if constexpr (IsInitializedAsArray)
@@ -79,9 +76,6 @@
             template <std::size_t ...Indices>
             constexpr uni_auto(const T(&v)[N], std::index_sequence<Indices...>) : values{ v[Indices]... } {}
             constexpr uni_auto(const T(&v)[N]) : uni_auto(v, std::make_index_sequence<N>()) {}
-            template <std::size_t ...Indices>
-            constexpr uni_auto(const T(&&v)[N], std::index_sequence<Indices...>) : values{ std::move(v[Indices])... } {}
-            constexpr uni_auto(const T(&&v)[N]) : uni_auto(v, std::make_index_sequence<N>()) {}
 
             constexpr operator type() const {
                 if constexpr (IsInitializedAsArray)
@@ -90,6 +84,10 @@
                     return values[0];
             }
 
+            constexpr auto size() const
+            requires IsInitializedAsArray {
+                return N;
+            }
             constexpr auto begin() const
             requires IsInitializedAsArray {
                 return std::cbegin(values);
@@ -147,16 +145,8 @@ namespace uninttp {
     template <uni_auto Value>
     using uni_auto_t = typename decltype(Value)::type;
 
-#ifdef UNINTTP_USE_STD_ARRAY
     template <uni_auto Value>
-    constexpr auto uni_auto_v = static_cast<uni_auto_t<Value>>(Value);
-#else
-    template <uni_auto Value>
-    constexpr const auto& uni_auto_v = static_cast<uni_auto_t<Value>>(Value);
-#endif
-
-    template <uni_auto Value>
-    constexpr auto uni_auto_len = std::size(uni_auto_v<Value>);
+    constexpr uni_auto_t<Value> uni_auto_v = Value;
 
     namespace detail {
         template <typename, uni_auto Value>

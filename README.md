@@ -4,7 +4,7 @@ A universal type for non-type template parameters for C++20 or later.
 
 ## Installation:
 
-uninttp (**Uni**versal **N**on-**T**ype **T**emplate **P**arameters) is a header-only library, meaning you only need to include the required header(s) to start using it in your project/environment. In this case, simply cloning this repository and doing `#include <uninttp/uni_auto.hpp>` should suffice.
+uninttp (***Uni***versal ***N***on-***T***ype ***T***emplate ***P***arameters) is a header-only library, meaning you only need to include the required header(s) to start using it in your project/environment. In this case, simply cloning this repository and doing `#include <uninttp/uni_auto.hpp>` should suffice.
 
 ## Usage:
 
@@ -27,7 +27,7 @@ int main() {
 
 And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/3qz1Yc38c)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/fvGssW49x)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -57,16 +57,8 @@ void print_array() {
     
     std::cout << std::endl;
 
-    // Index-based for loop (1st version)
-    /* (The usage of 'uni_auto_v' is required here as the compiler cannot do implicit
-        conversions in this context) */
-    for (std::size_t i = 0; i < std::size(uni_auto_v<Array>); i++)
-        std::cout << Array[i] << " ";
-    
-    std::cout << std::endl;
-
-    // Index-based for loop (2nd version)
-    for (std::size_t i = 0; i < uni_auto_len<Array>; i++)
+    // Index-based for loop
+    for (std::size_t i = 0; i < std::size(Array); i++)
         std::cout << Array[i] << " ";
     
     std::cout << std::endl;
@@ -276,7 +268,6 @@ All the examples shown have used function templates to demonstrate the capabilit
 | `uninttp::uni_auto_simplify_t<uni_auto Value>` | Gives the decayed type of the value held by the `uni_auto` object.<br/>If the `uni_auto` object holds an array, it decays it into a pointer and returns the pointer as the type.<br/>This feature is often useful for doing compile-time type-checking, SFINAE and for defining certain constraints on the types held by the `uni_auto` object.<br/><br/>***Equivalent to***: `std::remove_cv_t<decltype(uni_auto_simplify_v<Value>)>` |
 | `uninttp::uni_auto_v<uni_auto Value>` | Effectively extracts the underlying value held by the `uni_auto` object passed to it. |
 | `uninttp::uni_auto_simplify_v<uni_auto Value>` | Converts the underlying value of the `uni_auto` object into its simplest form. If the value held is an array, it converts it into a pointer and returns that, otherwise it does the exact same thing as `uni_auto_v`. |
-| `uninttp::uni_auto_len<uni_auto Value>` | As the name suggests, it returns the length/size of the array held by `uni_auto` (if any).<br/><br/>***Equivalent to***: `std::size(uni_auto_v<Value>)`. |
 
 ## Tell uninttp that you'd like to use `std::array` instead of normal C-style arrays:
 
@@ -309,15 +300,9 @@ int main() {
 }
 ```
 
-## Playground:
+## How to fetch the type and value from a `uni_auto` object explicitly (Limitations of `uni_auto`):
 
-If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/r7qhvGP4a) you go!
-
-## Limitations:
-
-Currently, there are two *known* drawbacks of using `uni_auto`:
-
-1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t<X>` and/or `uni_auto_simplify_t<X>` instead: [<kbd>Demo</kbd>](https://godbolt.org/z/9a9v7G796)
+1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to do something like this instead: [<kbd>Demo</kbd>](https://godbolt.org/z/Kvx1vYzqf)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <concepts>
@@ -326,20 +311,24 @@ Currently, there are two *known* drawbacks of using `uni_auto`:
 
     template <uni_auto X = 1.89>
     void fun() {
-        // This doesn't work
+        // This doesn't work for obvious reasons
         // static_assert(std::same_as<decltype(X), double>);                        // Error
 
-        static_assert(std::same_as<std::decay_t<decltype(uni_auto_v<X>)>, double>); // OK
-        static_assert(std::same_as<std::decay_t<uni_auto_t<X>>, double>);           // OK
-        // This would also work
+        // Using 'uni_auto_simplify_t':
         static_assert(std::same_as<uni_auto_simplify_t<X>, double>);                // OK
+
+        // Using 'uni_auto_t' and decaying the type returned:
+        static_assert(std::same_as<std::decay_t<uni_auto_t<X>>, double>);           // OK
+
+        // Using 'uni_auto_v' and then using 'decltype()' and decaying the type returned:
+        static_assert(std::same_as<std::decay_t<decltype(uni_auto_v<X>)>, double>); // OK
     }
 
     int main() {
         fun<>();
     }
     ```
-2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/a68Knnhe3)
+2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/a4jExs9nz)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <concepts>
@@ -348,17 +337,25 @@ Currently, there are two *known* drawbacks of using `uni_auto`:
 
     template <uni_auto X = 42>
     void fun() {
-        constexpr auto answer = uni_auto_v<X>;
-        /*
-            You can also write the line above like this by explicitly mentioning the type:
-            constexpr int answer = X;
-            Or by using 'uni_auto_simplify_v':
-            constexpr auto answer = uni_auto_simplify_v<X>;
-        */
-        static_assert(std::same_as<std::decay_t<decltype(answer)>, int>); // OK
+        // Using an explicit conversion statement
+        constexpr int answer1 = X;
+
+        // Using 'uni_auto_v'
+        constexpr auto answer2 = uni_auto_v<X>;
+
+        // Using 'uni_auto_simplify_v':
+        constexpr auto answer3 = uni_auto_simplify_v<X>;
+
+        static_assert(std::same_as<std::decay_t<decltype(answer1)>, int>); // OK
+        static_assert(std::same_as<std::decay_t<decltype(answer2)>, int>); // OK
+        static_assert(std::same_as<std::decay_t<decltype(answer3)>, int>); // OK
     }
 
     int main() {
         fun<>();
     }
     ```
+
+## Playground:
+
+If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/r7qhvGP4a) you go!
