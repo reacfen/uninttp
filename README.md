@@ -1,10 +1,23 @@
+
 # uninttp
 
 A universal type for non-type template parameters for C++20 or later.
 
 ## Installation:
 
-uninttp (***Uni***versal ***N***on-***T***ype ***T***emplate ***P***arameters) is a header-only library, meaning you only need to include the required header(s) to start using it in your project/environment. In this case, simply cloning this repository and doing `#include <uninttp/uni_auto.hpp>` should suffice.
+uninttp (***Uni***versal ***N***on-***T***ype ***T***emplate ***P***arameters) is a header-only library. You can either clone this repository or fetch one of the recent [releases](https://github.com/reacfen/uninttp/releases) at the time.
+
+Once that is done, you can simply include the header(s) and start using uninttp in your project:
+
+```cpp
+#include <uninttp/uni_auto.hpp>
+```
+
+uninttp also has a C++ module version, so if your compiler supports [C++20 modules](https://en.cppreference.com/w/cpp/language/modules), you can do something like this instead of including the whole header file into your project:
+
+```cpp
+import uninttp.uni_auto; // Improves compilation speed
+```
 
 ## Usage:
 
@@ -260,45 +273,44 @@ int main() {
 ```
 
 All the examples shown have used function templates to demonstrate the capability of `uni_auto`. However, it can readily be used in any context.
+
+## Test suite:
+
+An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
+> **Note**: *Some of the features portrayed in the test suite might not work on all compilers as C++20 support, as of writing this, is still in an experimental stage on most compilers*.
+
+The test suite can be found [here](https://godbolt.org/z/Yanbbd8es).
+
+(*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
+
 ## Cheat sheet:
 
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Description |
-| --- | --- |
-| `uninttp::uni_auto_t<uni_auto Value>` | Gives the type of the underlying value held by the `uni_auto` object passed to it. |
-| `uninttp::uni_auto_simplify_t<uni_auto Value>` | Gives the decayed type of the value held by the `uni_auto` object.<br/>If the `uni_auto` object holds an array, it decays it into a pointer and returns the pointer as the type.<br/>This feature is often useful for doing compile-time type-checking, SFINAE and for defining certain constraints on the types held by the `uni_auto` object. |
-| `uninttp::uni_auto_v<uni_auto Value>` | Effectively extracts the underlying value held by the `uni_auto` object passed to it. |
-| `uninttp::uni_auto_simplify_v<uni_auto Value>` | Converts the underlying value of the `uni_auto` object into its simplest form. If the value held is an array, it converts it into a pointer and returns that, otherwise it does the exact same thing as `uni_auto_v`. |
-
-## Tell uninttp that you'd like to use `std::array` instead of normal C-style arrays:
-
-It is completely up to the choice of the user to choose between working with C-style arrays or `std::array`, the former is used by uninttp by default. In order to use the latter, one needs to define `UNINTTP_USE_STD_ARRAY` before including any of uninttp's header(s): [<kbd>Demo</kbd>](https://godbolt.org/z/xP7d7W7KP)
-
-```cpp
-#define UNINTTP_USE_STD_ARRAY
-#include <uninttp/uni_auto.hpp>
-
-// Now 'uninttp::uni_auto' and co. will use 'std::array' instead of C-Style arrays to store their value(s)...
-
-#include <iostream>
-#include <cstddef>
-#include <array>
-
-using namespace uninttp;
-
-template <typename T, std::size_t N>
-void fun1(std::array<T, N> const& a) {
-    std::cout << a.data() << std::endl;
-}
-
-template <uni_auto U>
-void fun2() {
-    fun1(U);
-}
-
-int main() {
-    fun2<"Hello from std::array!">();
-}
-```
+<table>
+    <thead>
+        <tr>
+            <th style="width: 380px"></th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>uninttp::uni_auto_t&lt;uni_auto Value&gt;</code></td>
+            <td>Gives the type of the underlying value held by the <code>uni_auto</code> object passed to it.</td>
+        </tr>
+        <tr>
+            <td><code>uninttp::uni_auto_simplify_t&lt;uni_auto Value&gt;</code></td>
+            <td>Gives the decayed type of the value held by the <code>uni_auto</code> object.<br>If the <code>uni_auto</code> object holds an array, it decays it into a pointer and returns the pointer as the type.<br>This feature is often useful for doing compile-time type-checking, SFINAE and for defining certain constraints on the types held by the <code>uni_auto</code> object.</td>
+        </tr>
+        <tr>
+            <td><code>uninttp::uni_auto_v&lt;uni_auto Value&gt;</code></td>
+            <td>Effectively extracts the underlying value held by the <code>uni_auto</code> object passed to it.</td>
+        </tr>
+        <tr>
+            <td><code>uninttp::uni_auto_simplify_v&lt;uni_auto Value&gt;</code></td>
+            <td>Converts the underlying value of the <code>uni_auto</code> object into its simplest form. If the value held is an array, it converts it into a pointer and returns that, otherwise it does the exact same thing as <code>uni_auto_v</code>.</td>
+        </tr>
+    </tbody>
+</table>
 
 ## How to fetch the type and value from a `uni_auto` object explicitly (Limitations of `uni_auto`):
 

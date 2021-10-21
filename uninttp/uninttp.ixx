@@ -33,15 +33,16 @@
  * SOFTWARE.
  */
 
-#ifndef UNINTTP_UNI_AUTO_HPP
-#define UNINTTP_UNI_AUTO_HPP
+module;
 
 #include <type_traits>
 #include <iterator>
 #include <cstddef>
 #include <utility>
 
-namespace uninttp {
+export module uninttp.uni_auto;
+
+export namespace uninttp {
     /**
      * @brief The `uni_auto` class type implementation
      */
@@ -146,7 +147,7 @@ namespace uninttp {
 
     /* Deals with C-style arrays */
     template <typename T, std::size_t N>
-    uni_auto(T(&)[N]) -> uni_auto<T, N, true, false, false, false>;
+    uni_auto(T (&)[N]) -> uni_auto<T, N, true, false, false, false>;
 
     /* Deals with function pointers */
     template <typename R, typename ...Args>
@@ -211,5 +212,3 @@ namespace uninttp {
     template <uni_auto Value>
     using uni_auto_simplify_t = std::remove_cv_t<decltype(uni_auto_simplify_v<Value>)>;
 }
-
-#endif /* UNINTTP_UNI_AUTO_HPP */
