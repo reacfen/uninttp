@@ -45,7 +45,7 @@
     #include <array>
     namespace uninttp {
         template <typename T, std::size_t N = 1, bool IsInitializedAsArray = false, bool = false, bool = false>
-        struct uni_auto : public std::array<T, N> {
+        struct uni_auto : std::array<T, N> {
             using type = std::conditional_t<IsInitializedAsArray, std::array<T, N>, T>;
 
             constexpr uni_auto(T v) : std::array<T, N>{ v } {}
@@ -84,7 +84,7 @@
                     return values[0];
             }
 
-            constexpr auto size() const
+            static constexpr auto size()
             requires IsInitializedAsArray {
                 return N;
             }
@@ -102,7 +102,7 @@
 
 namespace uninttp {
     template <typename T>
-    struct uni_auto<T, 1, false, true, false> : public T {
+    struct uni_auto<T, 1, false, true, false> : T {
         using type = const T&;
 
         constexpr uni_auto(T v) : T{ std::move(v) } {}
@@ -127,8 +127,6 @@ namespace uninttp {
 
     template <typename T, std::size_t N>
     uni_auto(const T(&)[N]) -> uni_auto<std::remove_cv_t<T>, N, true, false, false>;
-    template <typename T, std::size_t N>
-    uni_auto(const T(&&)[N]) -> uni_auto<std::remove_cv_t<T>, N, true, false, false>;
     template <typename R, typename ...Args>
     uni_auto(R(Args...)) -> uni_auto<R(Args...), 1, false, false, true>;
     template <typename T>
@@ -137,8 +135,8 @@ namespace uninttp {
 
     template <typename T1, typename T2>
     constexpr auto operator->*(T1&& a, const uni_auto<T2, 1, false, false, false>& b) {
-        return [&](auto&&... args) constexpr {
-            return (std::forward<T1>(a).*static_cast<T2>(b))(std::forward<decltype(args)>(args)...);
+        return [&] <typename ...Args>(Args&&... args) constexpr {
+            return (std::forward<T1>(a).*static_cast<T2>(b))(std::forward<Args>(args)...);
         };
     }
 
