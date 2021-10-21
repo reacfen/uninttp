@@ -262,10 +262,10 @@ int main() {
 All the examples shown have used function templates to demonstrate the capability of `uni_auto`. However, it can readily be used in any context.
 ## Cheat sheet:
 
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Description |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Description |
 | --- | --- |
 | `uninttp::uni_auto_t<uni_auto Value>` | Gives the type of the underlying value held by the `uni_auto` object passed to it. |
-| `uninttp::uni_auto_simplify_t<uni_auto Value>` | Gives the decayed type of the value held by the `uni_auto` object.<br/>If the `uni_auto` object holds an array, it decays it into a pointer and returns the pointer as the type.<br/>This feature is often useful for doing compile-time type-checking, SFINAE and for defining certain constraints on the types held by the `uni_auto` object.<br/><br/>***Equivalent to***: `std::remove_cv_t<decltype(uni_auto_simplify_v<Value>)>` |
+| `uninttp::uni_auto_simplify_t<uni_auto Value>` | Gives the decayed type of the value held by the `uni_auto` object.<br/>If the `uni_auto` object holds an array, it decays it into a pointer and returns the pointer as the type.<br/>This feature is often useful for doing compile-time type-checking, SFINAE and for defining certain constraints on the types held by the `uni_auto` object. |
 | `uninttp::uni_auto_v<uni_auto Value>` | Effectively extracts the underlying value held by the `uni_auto` object passed to it. |
 | `uninttp::uni_auto_simplify_v<uni_auto Value>` | Converts the underlying value of the `uni_auto` object into its simplest form. If the value held is an array, it converts it into a pointer and returns that, otherwise it does the exact same thing as `uni_auto_v`. |
 
