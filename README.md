@@ -239,7 +239,7 @@ int main() {
 }
 ```
 
-Example using member function pointers: [<kbd>Demo</kbd>](https://godbolt.org/z/K9KK6EcKM)
+Example using member function pointers: [<kbd>Demo</kbd>](https://godbolt.org/z/xTo7487cE)
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <iostream>
@@ -247,13 +247,13 @@ Example using member function pointers: [<kbd>Demo</kbd>](https://godbolt.org/z/
 using namespace uninttp;
 
 struct some_class {
-    auto some_member(int& p) const {
+    void some_member(int& p) const {
         p = 2;
     }
 };
 
 template <uni_auto Value>
-auto call_member(some_class const& x, int& y) {
+void call_member(some_class const& x, int& y) {
     (x->*Value)(y); // Alternative: '(x.*uni_auto_v<Value>)(y);'
 }
 
@@ -277,35 +277,6 @@ All the examples shown have used function templates to demonstrate the capabilit
 | `uninttp::uni_auto_v<uni_auto Value>` | Effectively extracts the underlying value held by the `uni_auto` object passed to it. |
 | `uninttp::uni_auto_simplify_v<uni_auto Value>` | Converts the underlying value of the `uni_auto` object into its simplest form. If the value held is an array, it converts it into a pointer and returns that, otherwise it does the exact same thing as `uni_auto_v`. |
 | `uninttp::uni_auto_len<uni_auto Value>` | As the name suggests, it returns the length/size of the array held by `uni_auto` (if any).<br/><br/>***Equivalent to***: `std::size(uni_auto_v<Value>)`. |
-
-## Limitations:
-
-There are two drawbacks to using `uni_auto`:
-
-1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t<X>` and/or `uni_auto_simplify_t<X>` instead:
-    ```cpp
-    template <uni_auto X = 1.89>
-    void fun() {
-        // This doesn't work
-        static_assert(std::same_as<decltype(X), double>);                 // Error
-
-        static_assert(std::same_as<std::decay_t<uni_auto_t<X>>, double>); // OK
-        // This would also work
-        static_assert(std::same_as<uni_auto_simplify_t<X>, double>);      // OK
-    }
-    // ...
-    ```
-2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v`:
-    ```cpp
-    template <uni_auto X = 42>
-    void fun() {
-        constexpr auto answer = uni_auto_v<X>;
-        /* You can also write the above line as follows:
-           constexpr int answer = X; */
-        static_assert(std::same_as<std::decay_t<decltype(answer)>, int>); // OK
-    }
-    // ...
-    ```
 
 ## Tell uninttp that you'd like to use `std::array` instead of normal C-style arrays:
 
@@ -341,3 +312,53 @@ int main() {
 ## Playground:
 
 If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/r7qhvGP4a) you go!
+
+## Limitations:
+
+Currently, there are two *known* drawbacks of using `uni_auto`:
+
+1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t<X>` and/or `uni_auto_simplify_t<X>` instead: [<kbd>Demo</kbd>](https://godbolt.org/z/9a9v7G796)
+    ```cpp
+    #include <uninttp/uni_auto.hpp>
+    #include <concepts>
+
+    using namespace uninttp;
+
+    template <uni_auto X = 1.89>
+    void fun() {
+        // This doesn't work
+        // static_assert(std::same_as<decltype(X), double>);                        // Error
+
+        static_assert(std::same_as<std::decay_t<decltype(uni_auto_v<X>)>, double>); // OK
+        static_assert(std::same_as<std::decay_t<uni_auto_t<X>>, double>);           // OK
+        // This would also work
+        static_assert(std::same_as<uni_auto_simplify_t<X>, double>);                // OK
+    }
+
+    int main() {
+        fun<>();
+    }
+    ```
+2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/a68Knnhe3)
+    ```cpp
+    #include <uninttp/uni_auto.hpp>
+    #include <concepts>
+
+    using namespace uninttp;
+
+    template <uni_auto X = 42>
+    void fun() {
+        constexpr auto answer = uni_auto_v<X>;
+        /*
+            You can also write the line above like this by explicitly mentioning the type:
+            constexpr int answer = X;
+            Or by using 'uni_auto_simplify_v':
+            constexpr auto answer = uni_auto_simplify_v<X>;
+        */
+        static_assert(std::same_as<std::decay_t<decltype(answer)>, int>); // OK
+    }
+
+    int main() {
+        fun<>();
+    }
+    ```
