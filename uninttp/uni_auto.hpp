@@ -12,7 +12,7 @@
  *
  * Version: v1.9
  *
- * Copyright (c) 2021-... reacfen
+ * Copyright (c) 2021 reacfen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,7 +72,7 @@
             using type = std::conditional_t<IsInitializedAsArray, const T[N], const T>&;
             const T values[N];
 
-            constexpr uni_auto(T v) : values{ std::move(v) } {}
+            constexpr uni_auto(T v) : values{ v } {}
             template <std::size_t ...Indices>
             constexpr uni_auto(const T(&v)[N], std::index_sequence<Indices...>) : values{ v[Indices]... } {}
             constexpr uni_auto(const T(&v)[N]) : uni_auto(v, std::make_index_sequence<N>()) {}
