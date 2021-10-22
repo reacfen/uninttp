@@ -279,7 +279,7 @@ All the examples shown have used function templates to demonstrate the capabilit
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 > **Note**: *Some of the features portrayed in the test suite might not work on all compilers as C++20 support, as of writing this, is still in an experimental stage on most compilers*.
 
-The test suite can be found [here](https://godbolt.org/z/Yanbbd8es).
+The test suite can be found [here](https://godbolt.org/z/cY6j65z9a).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
