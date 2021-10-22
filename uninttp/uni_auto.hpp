@@ -210,7 +210,7 @@ namespace uninttp {
     constexpr auto uni_auto_simplify_v =
         static_cast<
             std::conditional_t<std::is_array_v<std::remove_reference_t<uni_auto_t<Value>>>,
-                const std::remove_extent_t<std::remove_reference_t<uni_auto_t<Value>>>*,
+                std::remove_extent_t<std::remove_reference_t<uni_auto_t<Value>>>*,
                 uni_auto_t<Value>>
         >(Value);
 
