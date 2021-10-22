@@ -40,7 +40,7 @@ int main() {
 
 And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays through it: [<kbd>Demo</kbd>](https://godbolt.org/z/fvGssW49x)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays (or arrays or static storage duration) through it: [<kbd>Demo</kbd>](https://godbolt.org/z/oTGaj4eeY)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -59,7 +59,7 @@ constexpr auto shift() {
 template <uni_auto Array>
 void print_array() {
     // Using range-based for loop
-    for (auto const& elem : Array)
+    for (const auto& elem : Array)
         std::cout << elem << " ";
     
     std::cout << std::endl;
@@ -77,13 +77,18 @@ void print_array() {
     std::cout << std::endl;
 }
 
+static int arr2[] = {1, 2, 4, 8};
+
 int main() {
     // Passing a string literal
     static_assert(std::string_view(shift<"foobar", 3>()) == "bar"); // OK
 
     // Passing an array marked as 'constexpr'
-    constexpr int arr[] = { 1, 8, 9, 20 };
-    print_array<arr>();                                             // 1 8 9 20
+    constexpr int arr1[] = { 1, 8, 9, 20 };
+    print_array<arr1>();                                            // 1 8 9 20
+
+    // Passing an array of static storage duration
+    print_array<arr2>();                                            // 1 2 4 8
 
     // Passing an 'std::array' object
     print_array<std::array { 1, 4, 6, 9 }>();                       // 1 4 6 9
@@ -179,7 +184,7 @@ int main() {
 }
 ```
 
-You can also pass lambdas and compile-time functor objects through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/nbPxTjKz5)
+You can pass lambdas and functors through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/nbPxTjKz5)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -203,9 +208,9 @@ int main() {
 }
 ```
 
-And it doesn't end there! `uni_auto` can also work with pointers of almost any type:
+And it doesn't end there! `uni_auto` can also work with pointers to objects:
 
-Example using a pointer to an object: [<kbd>Demo</kbd>](https://godbolt.org/z/jxM6PoWqj)
+Example using a pointer to an object: [<kbd>Demo</kbd>](https://godbolt.org/z/oPbPjxjj1)
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <iostream>
@@ -214,12 +219,15 @@ using namespace uninttp;
 
 template <uni_auto p>
 void print_pointer() {
-    std::cout << p << std::endl; // Prints the location of 'x' in memory
+    std::cout << p << std::endl;
 }
+
+int y = 3;
 
 int main() {
     static constexpr int x = 2;
-    print_pointer<&x>();
+    print_pointer<&x>(); // Prints the location of 'x' in memory
+    print_pointer<&y>(); // Prints the location of 'y' in memory
 }
 ```
 
@@ -244,7 +252,7 @@ int main() {
 }
 ```
 
-Example using a pointer to a member function: [<kbd>Demo</kbd>](https://godbolt.org/z/xTo7487cE)
+Example using a pointer to a member function: [<kbd>Demo</kbd>](https://godbolt.org/z/6YqqPne9M)
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <iostream>
@@ -258,8 +266,8 @@ struct some_class {
 };
 
 template <uni_auto Value>
-void call_member(some_class const& x, int& y) {
-    (x->*Value)(y); // Alternative: '(x.*uni_auto_v<Value>)(y);'
+void call_member(const some_class& x, int& y) {
+    (x->*Value)(y); // Alternatively, you can write: '(x.*uni_auto_v<Value>)(y);'
 }
 
 int main() {
@@ -340,15 +348,16 @@ The test suite can be found [here](https://godbolt.org/z/cY6j65z9a).
         fun<>();
     }
     ```
-2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/a4jExs9nz)
+2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/Psqns4scP)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <concepts>
+    #include <array>
 
     using namespace uninttp;
 
     template <uni_auto X = 42>
-    void fun() {
+    void fun1() {
         // Using an explicit conversion statement
         constexpr int answer1 = X;
 
@@ -363,8 +372,21 @@ The test suite can be found [here](https://godbolt.org/z/cY6j65z9a).
         static_assert(std::same_as<std::decay_t<decltype(answer3)>, int>); // OK
     }
 
+    template <uni_auto Array>
+    void fun2() {
+        auto arr = std::to_array(uni_auto_v<Array>);
+        
+        using T = typename decltype(arr)::value_type;
+        constexpr auto N = arr.size();
+
+        static_assert(std::is_same_v<decltype(arr), std::array<T, N>>); // OK
+    }
+
     int main() {
-        fun<>();
+        fun1<>();
+
+        constexpr int arr[] = {1, 2, 3, 4};
+        fun2<arr>();
     }
     ```
 
