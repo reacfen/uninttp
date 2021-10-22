@@ -322,54 +322,57 @@ The test suite can be found [here](https://godbolt.org/z/cY6j65z9a).
 
 ## How to fetch the type and value from a `uni_auto` object explicitly (Limitations of `uni_auto`):
 
-1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to do something like this instead: [<kbd>Demo</kbd>](https://godbolt.org/z/Kvx1vYzqf)
+1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to do something like this instead: [<kbd>Demo</kbd>](https://godbolt.org/z/njh1Wqrd9)
     ```cpp
     #include <uninttp/uni_auto.hpp>
-    #include <concepts>
+    #include <type_traits>
 
     using namespace uninttp;
 
     template <uni_auto X = 1.89>
     void fun() {
         // This doesn't work for obvious reasons
-        // static_assert(std::same_as<decltype(X), double>);                        // Error
+        // static_assert(std::same_as<decltype(X), double>);                                       // Error
+
+        // Using 'uni_auto_t':
+        static_assert(std::is_same_v<uni_auto_t<X>, double>);                                      // OK
+
+        // Using 'uni_auto_v' and then using 'decltype()' and removing the const specifier from the type returned:
+        static_assert(std::is_same_v<std::remove_cv_t<decltype(uni_auto_v<X>)>, double>);          // OK
 
         // Using 'uni_auto_simplify_t':
-        static_assert(std::same_as<uni_auto_simplify_t<X>, double>);                // OK
+        static_assert(std::is_same_v<uni_auto_simplify_t<X>, double>);                             // OK
 
-        // Using 'uni_auto_t' and decaying the type returned:
-        static_assert(std::same_as<std::decay_t<uni_auto_t<X>>, double>);           // OK
-
-        // Using 'uni_auto_v' and then using 'decltype()' and decaying the type returned:
-        static_assert(std::same_as<std::decay_t<decltype(uni_auto_v<X>)>, double>); // OK
+        // Using 'uni_auto_simplify_v' and then using 'decltype()' and removing the const specifier from the type returned:
+        static_assert(std::is_same_v<std::remove_cv_t<decltype(uni_auto_simplify_v<X>)>, double>); // OK
     }
 
     int main() {
         fun<>();
     }
     ```
-2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/Psqns4scP)
+2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/Pc1ff9fjz)
     ```cpp
     #include <uninttp/uni_auto.hpp>
-    #include <concepts>
+    #include <type_traits>
     #include <array>
 
     using namespace uninttp;
 
     template <uni_auto X = 42>
     void fun1() {
-        // Using an explicit conversion statement
+        // Using an explicit conversion statement:
         constexpr int answer1 = X;
 
-        // Using 'uni_auto_v'
+        // Using 'uni_auto_v':
         constexpr auto answer2 = uni_auto_v<X>;
 
         // Using 'uni_auto_simplify_v':
         constexpr auto answer3 = uni_auto_simplify_v<X>;
 
-        static_assert(std::same_as<std::decay_t<decltype(answer1)>, int>); // OK
-        static_assert(std::same_as<std::decay_t<decltype(answer2)>, int>); // OK
-        static_assert(std::same_as<std::decay_t<decltype(answer3)>, int>); // OK
+        static_assert(std::is_same_v<std::remove_cv_t<decltype(answer1)>, int>); // OK
+        static_assert(std::is_same_v<std::remove_cv_t<decltype(answer2)>, int>); // OK
+        static_assert(std::is_same_v<std::remove_cv_t<decltype(answer3)>, int>); // OK
     }
 
     template <uni_auto Array>
