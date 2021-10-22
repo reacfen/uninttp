@@ -147,13 +147,13 @@ export namespace uninttp {
 
     /* Deals with C-style arrays */
     template <typename T, std::size_t N>
-    uni_auto(T (&)[N]) -> uni_auto<T, N, true, false, false, false>;
+    uni_auto(T(&)[N]) -> uni_auto<T, N, true, false, false, false>;
 
     /* Deals with function pointers */
     template <typename R, typename ...Args>
     uni_auto(R (Args...)) -> uni_auto<R (Args...), 0, false, false, true, false>;
 
-    /* Deals with integral and enumeration types, pointer to objects, pointer to member functions and objects, nullptr */
+    /* Deals with integral and enumeration types, pointers to objects, pointers to member functions and objects, nullptr */
     template <typename T>
         requires std::is_class_v<T>
     uni_auto(const T&) -> uni_auto<std::remove_cv_t<T>, 0, false, true, false, false>;
@@ -176,6 +176,16 @@ export namespace uninttp {
     constexpr auto operator->*(T1&& a, const uni_auto<T2, 0, false, false, false, false>& b) {
         return [&] <typename ...Args>(Args&&... args) constexpr {
             return (std::forward<T1>(a).*static_cast<T2>(b))(std::forward<Args>(args)...);
+        };
+    }
+
+    /**
+     * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
+     */
+    template <typename T1, typename T2>
+    constexpr auto operator->*(T1* a, const uni_auto<T2, 0, false, false, false, false>& b) {
+        return [&] <typename ...Args>(Args&&... args) constexpr {
+            return (a->*static_cast<T2>(b))(std::forward<Args>(args)...);
         };
     }
 
