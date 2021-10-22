@@ -179,6 +179,16 @@ namespace uninttp {
     }
 
     /**
+     * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
+     */
+    template <typename T1, typename T2>
+    constexpr auto operator->*(T1* a, const uni_auto<T2, 0, false, false, false, false>& b) {
+        return [&] <typename ...Args>(Args&&... args) constexpr {
+            return (a->*static_cast<T2>(b))(std::forward<Args>(args)...);
+        };
+    }
+
+    /**
      * @brief Fetches the type held by whatever `uni_auto` object is passed to it.
      * @tparam Value The `uni_auto` object
      */
