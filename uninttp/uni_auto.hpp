@@ -152,7 +152,7 @@ namespace uninttp {
     template <typename R, typename ...Args>
     uni_auto(R (Args...)) -> uni_auto<R (Args...), 0, false, false, true, false>;
 
-    /* Deals with integral and enumeration types, pointer to objects, pointer to member functions and objects, nullptr */
+    /* Deals with integral and enumeration types, pointers to objects, pointers to member functions and objects, nullptr */
     template <typename T>
         requires std::is_class_v<T>
     uni_auto(const T&) -> uni_auto<std::remove_cv_t<T>, 0, false, true, false, false>;

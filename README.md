@@ -244,7 +244,7 @@ int main() {
 }
 ```
 
-Example using member function pointers: [<kbd>Demo</kbd>](https://godbolt.org/z/xTo7487cE)
+Example using a pointer to a member function: [<kbd>Demo</kbd>](https://godbolt.org/z/xTo7487cE)
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <iostream>
