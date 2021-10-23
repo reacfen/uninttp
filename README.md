@@ -159,7 +159,7 @@ int main() {
 > }
 > ```
 
-Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/PzhcoM8eW)
+Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/Yao3oP5er)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -167,11 +167,11 @@ Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd
 using namespace uninttp;
 
 struct X {
-    int val{6};
+    int val = 6;
 };
 
 struct Y {
-    int val{7};
+    int val = 7;
 };
 
 template <uni_auto A, uni_auto B>
@@ -231,7 +231,7 @@ int main() {
 }
 ```
 
-Example using function pointers: [<kbd>Demo</kbd>](https://godbolt.org/z/fEPa56a1f)
+Example using function pointers ([This currently does NOT compile on GCC.](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=97700)): [<kbd>Demo</kbd>](https://godbolt.org/z/fEPa56a1f)
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <iostream>
@@ -287,7 +287,7 @@ All the examples shown have used function templates to demonstrate the capabilit
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 > **Note**: *Some of the features portrayed in the test suite might not work on all compilers as C++20 support, as of writing this, is still in an experimental stage on most compilers*.
 
-The test suite can be found [here](https://godbolt.org/z/cY6j65z9a).
+The test suite can be found [here](https://godbolt.org/z/9e47e31Ps).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
@@ -320,7 +320,7 @@ The test suite can be found [here](https://godbolt.org/z/cY6j65z9a).
     </tbody>
 </table>
 
-## How to fetch the type and value from a `uni_auto` object explicitly (Limitations of `uni_auto`):
+## *Some slight restrictions of `uni_auto` that might be useful to know*:
 
 1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to do something like this instead: [<kbd>Demo</kbd>](https://godbolt.org/z/njh1Wqrd9)
     ```cpp
@@ -390,6 +390,41 @@ The test suite can be found [here](https://godbolt.org/z/cY6j65z9a).
 
         constexpr int arr[] = {1, 2, 3, 4};
         fun2<arr>();
+    }
+    ```
+3)  Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to do something like this: [<kbd>Demo</kbd>](https://godbolt.org/z/be33WcbPx)
+    ```cpp
+    #include <uninttp/uni_auto.hpp>
+    #include <cassert>
+
+    using namespace uninttp;
+
+    struct some_class {
+        int p = 0;
+        int& operator=(const int& rhs) {
+            return p = rhs;
+        }
+    };
+
+    template <uni_auto X>
+    void fun() {
+        X = 2; // Assignment operator works as expected
+
+        // auto a = X.p;                // This will NOT work since the C++ Standard does not allow
+                                        // overloading the dot operator (yet)
+
+        // If you want to access 'p' directly, you would have to do either of the two below:
+        const auto b = X->p;            // OK
+        // OR
+        const auto c = uni_auto_v<X>.p; // OK
+
+        assert(b == c);                 // OK
+    }
+
+    some_class some_obj;
+
+    int main() {
+        fun<some_obj>();
     }
     ```
 
