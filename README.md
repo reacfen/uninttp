@@ -159,7 +159,7 @@ int main() {
 > }
 > ```
 
-Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/Yao3oP5er)
+Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/8r9PvTqqr)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -176,7 +176,7 @@ struct Y {
 
 template <uni_auto A, uni_auto B>
 constexpr auto mul() {
-    return A.val * B.val;
+    return A.val * B.val; // Alternatively, you can write: 'return A->val * B->val;'
 }
 
 int main() {
@@ -320,7 +320,7 @@ The test suite can be found [here](https://godbolt.org/z/9e47e31Ps).
     </tbody>
 </table>
 
-## *Some slight restrictions of `uni_auto` that might be useful to know*:
+## *Some slight restrictions of using `uni_auto` that might be useful to know*:
 
 1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to do something like this instead: [<kbd>Demo</kbd>](https://godbolt.org/z/njh1Wqrd9)
     ```cpp

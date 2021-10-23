@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v2.1
+ * Version: v2.2
  *
  * Copyright (c) 2021 reacfen
  *
@@ -55,21 +55,21 @@ export namespace uninttp {
         using type = T(&)[N];
         type value;
 
-        constexpr uni_auto(type v) : value{v} {}
+        constexpr uni_auto(type v) noexcept : value{v} {}
 
-        constexpr operator type() const {
+        constexpr operator type() const noexcept {
             return value;
         }
 
-        static constexpr auto size() {
+        static constexpr auto size() noexcept {
             return N;
         }
 
-        constexpr auto begin() const {
+        constexpr auto begin() const noexcept {
             return std::begin(value);
         }
 
-        constexpr auto end() const {
+        constexpr auto end() const noexcept {
             return std::end(value);
         }
     };
@@ -80,23 +80,24 @@ export namespace uninttp {
         std::remove_reference_t<type> value;
 
         template <std::size_t ...Indices>
-        constexpr uni_auto(type v, std::index_sequence<Indices...>) : value{v[Indices]...} {}
+        constexpr uni_auto(type v, std::index_sequence<Indices...>) noexcept(noexcept(T{std::declval<T>()}))
+            : value{v[Indices]...} {}
 
-        constexpr uni_auto(type v) : uni_auto{v, std::make_index_sequence<N>()} {}
+        constexpr uni_auto(type v) noexcept : uni_auto{v, std::make_index_sequence<N>()} {}
 
-        constexpr operator type() const {
+        constexpr operator type() const noexcept {
             return value;
         }
 
-        static constexpr auto size() {
+        static constexpr auto size() noexcept {
             return N;
         }
 
-        constexpr auto begin() const {
+        constexpr auto begin() const noexcept {
             return std::begin(value);
         }
 
-        constexpr auto end() const {
+        constexpr auto end() const noexcept {
             return std::end(value);
         }
     };
@@ -105,10 +106,14 @@ export namespace uninttp {
     struct uni_auto<T, 0, false, true, false, false, false> : T {
         using type = T;
 
-        constexpr uni_auto(type v) : T{v} {}
+        constexpr uni_auto(type v) noexcept(noexcept(type{v})) : type{v} {}
 
-        constexpr operator type() const {
+        constexpr operator type() const noexcept {
             return *this;
+        }
+
+        constexpr auto operator->() const noexcept {
+            return static_cast<const type*>(this);
         }
     };
 
@@ -117,31 +122,31 @@ export namespace uninttp {
         using type = T*&;
         type value;
 
-        constexpr uni_auto(type v) : value{v} {}
+        constexpr uni_auto(type v) noexcept : value{v} {}
 
-        constexpr operator type() const {
+        constexpr operator type() const noexcept {
             return value;
         }
 
-        constexpr type operator->() const {
+        constexpr type operator->() const noexcept {
             return value;
         }
     };
 
     template <typename R, typename ...Args>
-    struct uni_auto<R (Args...), 0, false, false, true, false, false> {
-        using type = R (*)(Args...);
+    struct uni_auto<R (Args ...), 0, false, false, true, false, false> {
+        using type = R (*)(Args ...);
         type value;
 
-        constexpr uni_auto(type v) : value{v} {}
+        constexpr uni_auto(type v) noexcept : value{v} {}
 
-        constexpr operator type() const {
+        constexpr operator type() const noexcept {
             return value;
         }
 
-        constexpr auto operator&() const = delete;
+        constexpr auto operator&() const noexcept = delete;
 
-        constexpr R operator()(Args&&... args) const {
+        constexpr R operator()(Args&&... args) const noexcept(noexcept(value(std::forward<Args>(args)...))) {
             return value(std::forward<Args>(args)...);
         }
     };
@@ -151,9 +156,9 @@ export namespace uninttp {
         using type = T;
         type value;
 
-        constexpr uni_auto(type v) : value{v} {}
+        constexpr uni_auto(type v) noexcept(noexcept(type{v})) : value{v} {}
 
-        constexpr operator type() const {
+        constexpr operator type() const noexcept {
             return value;
         }
     };
@@ -163,80 +168,80 @@ export namespace uninttp {
         using type = T&;
         type value;
 
-        constexpr uni_auto(type v) : value{v} {}
+        constexpr uni_auto(type v) noexcept : value{v} {}
 
         template <typename U>
-        constexpr decltype(auto) operator=(U&& b) const {
+        constexpr decltype(auto) operator=(U&& b) const noexcept(noexcept(value = std::forward<U>(b))) {
             return value = std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator+=(U&& b) const {
+        constexpr decltype(auto) operator+=(U&& b) const noexcept(noexcept(value += std::forward<U>(b))) {
             return value += std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator-=(U&& b) const {
+        constexpr decltype(auto) operator-=(U&& b) const noexcept(noexcept(value -= std::forward<U>(b))) {
             return value -= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator*=(U&& b) const {
+        constexpr decltype(auto) operator*=(U&& b) const noexcept(noexcept(value *= std::forward<U>(b))) {
             return value *= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator/=(U&& b) const {
+        constexpr decltype(auto) operator/=(U&& b) const noexcept(noexcept(value /= std::forward<U>(b))) {
             return value /= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator%=(U&& b) const {
+        constexpr decltype(auto) operator%=(U&& b) const noexcept(noexcept(value %= std::forward<U>(b))) {
             return value %= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator&=(U&& b) const {
+        constexpr decltype(auto) operator&=(U&& b) const noexcept(noexcept(value &= std::forward<U>(b))) {
             return value &= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator|=(U&& b) const {
+        constexpr decltype(auto) operator|=(U&& b) const noexcept(noexcept(value |= std::forward<U>(b))) {
             return value |= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator^=(U&& b) const {
+        constexpr decltype(auto) operator^=(U&& b) const noexcept(noexcept(value ^= std::forward<U>(b))) {
             return value ^= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator<<=(U&& b) const {
+        constexpr decltype(auto) operator<<=(U&& b) const noexcept(noexcept(value <<= std::forward<U>(b))) {
             return value <<= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator>>=(U&& b) const {
+        constexpr decltype(auto) operator>>=(U&& b) const noexcept(noexcept(value >>= std::forward<U>(b))) {
             return value >>= std::forward<U>(b);
         }
 
-        constexpr decltype(auto) operator++() const {
+        constexpr decltype(auto) operator++() const noexcept(noexcept(++value)) {
             return ++value;
         }
 
-        constexpr decltype(auto) operator--() const {
+        constexpr decltype(auto) operator--() const noexcept(noexcept(--value)) {
             return --value;
         }
 
-        constexpr decltype(auto) operator++(int) const {
+        constexpr decltype(auto) operator++(int) const noexcept(noexcept(value++)) {
             return value++;
         }
 
-        constexpr decltype(auto) operator--(int) const {
+        constexpr decltype(auto) operator--(int) const noexcept(noexcept(value--)) {
             return value--;
         }
 
-        constexpr operator type() const {
+        constexpr operator type() const noexcept {
             return value;
         }
     };
@@ -246,117 +251,117 @@ export namespace uninttp {
         using type = T&;
         type value;
 
-        constexpr uni_auto(type v) : value{v} {}
+        constexpr uni_auto(type v) noexcept : value{v} {}
 
         template <typename U>
-        constexpr decltype(auto) operator=(U&& b) const
-        requires requires { value = std::forward<U>(b); } {
+        constexpr decltype(auto) operator=(U&& b) const noexcept(noexcept(value = std::forward<U>(b)))
+            requires requires { value = std::forward<U>(b); } {
             return value = std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator+=(U&& b) const
-        requires requires { value += std::forward<U>(b); } {
+        constexpr decltype(auto) operator+=(U&& b) const noexcept(noexcept(value += std::forward<U>(b)))
+            requires requires { value += std::forward<U>(b); } {
             return value += std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator-=(U&& b) const
-        requires requires { value -= std::forward<U>(b); } {
+        constexpr decltype(auto) operator-=(U&& b) const noexcept(noexcept(value -= std::forward<U>(b)))
+            requires requires { value -= std::forward<U>(b); } {
             return value -= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator*=(U&& b) const
-        requires requires { value *= std::forward<U>(b); } {
+        constexpr decltype(auto) operator*=(U&& b) const noexcept(noexcept(value *= std::forward<U>(b)))
+            requires requires { value *= std::forward<U>(b); } {
             return value *= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator/=(U&& b) const
-        requires requires { value /= std::forward<U>(b); } {
+        constexpr decltype(auto) operator/=(U&& b) const noexcept(noexcept(value /= std::forward<U>(b)))
+            requires requires { value /= std::forward<U>(b); } {
             return value /= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator%=(U&& b) const
-        requires requires { value %= std::forward<U>(b); } {
+        constexpr decltype(auto) operator%=(U&& b) const noexcept(noexcept(value %= std::forward<U>(b)))
+            requires requires { value %= std::forward<U>(b); } {
             return value %= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator&=(U&& b) const
-        requires requires { value &= std::forward<U>(b); } {
+        constexpr decltype(auto) operator&=(U&& b) const noexcept(noexcept(value &= std::forward<U>(b)))
+            requires requires { value &= std::forward<U>(b); } {
             return value &= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator|=(U&& b) const
-        requires requires { value |= std::forward<U>(b); } {
+        constexpr decltype(auto) operator|=(U&& b) const noexcept(noexcept(value |= std::forward<U>(b)))
+            requires requires { value |= std::forward<U>(b); } {
             return value |= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator^=(U&& b) const
-        requires requires { value ^= std::forward<U>(b); } {
+        constexpr decltype(auto) operator^=(U&& b) const noexcept(noexcept(value ^= std::forward<U>(b)))
+            requires requires { value ^= std::forward<U>(b); } {
             return value ^= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator<<=(U&& b) const
-        requires requires { value <<= std::forward<U>(b); } {
+        constexpr decltype(auto) operator<<=(U&& b) const noexcept(noexcept(value <<= std::forward<U>(b)))
+            requires requires { value <<= std::forward<U>(b); } {
             return value <<= std::forward<U>(b);
         }
 
         template <typename U>
-        constexpr decltype(auto) operator>>=(U&& b) const
-        requires requires { value >>= std::forward<U>(b); } {
+        constexpr decltype(auto) operator>>=(U&& b) const noexcept(noexcept(value >>= std::forward<U>(b)))
+            requires requires { value >>= std::forward<U>(b); } {
             return value >>= std::forward<U>(b);
         }
 
-        constexpr decltype(auto) operator++() const
-        requires requires { ++value; } {
+        constexpr decltype(auto) operator++() const noexcept(noexcept(++value))
+            requires requires { ++value; } {
             return ++value;
         }
 
-        constexpr decltype(auto) operator--() const
-        requires requires { --value; } {
+        constexpr decltype(auto) operator--() const noexcept(noexcept(--value))
+            requires requires { --value; } {
             return --value;
         }
 
-        constexpr decltype(auto) operator++(int) const
-        requires requires { value++; } {
+        constexpr decltype(auto) operator++(int) const noexcept(noexcept(value++))
+            requires requires { value++; } {
             return value++;
         }
-        
-        constexpr decltype(auto) operator--(int) const
-        requires requires { value--; } {
+
+        constexpr decltype(auto) operator--(int) const noexcept(noexcept(value--))
+            requires requires { value--; } {
             return value--;
         }
 
-        constexpr decltype(auto) operator->() const {
+        constexpr decltype(auto) operator->() const noexcept {
             return std::addressof(value);
         }
 
-        constexpr operator type() const {
+        constexpr operator type() const noexcept {
             return value;
         }
     };
 
     /* Deals with C-style arrays */
     template <typename T, std::size_t N>
-    uni_auto(T(&)[N]) -> uni_auto<T, N, true, false, false, false, false>;
+    uni_auto(T (&)[N]) -> uni_auto<T, N, true, false, false, false, false>;
 
     /* Deals with function pointers */
     template <typename R, typename ...Args>
-    uni_auto(R (Args...)) -> uni_auto<R (Args...), 0, false, false, true, false, false>;
+    uni_auto(R (Args ...)) -> uni_auto<R (Args ...), 0, false, false, true, false, false>;
 
     /* Deals with integral and enumeration types, pointers to objects, pointers to member functions and objects, nullptr */
     template <typename T>
         requires std::is_class_v<T>
     uni_auto(const T&) -> uni_auto<std::remove_cv_t<T>, 0, false, true, false, false, false>;
     template <typename T>
-        requires (!std::is_class_v<T> && !std::is_class_v<std::remove_pointer_t<T>> && !std::is_array_v<T>)
+        requires (!(std::is_class_v<T> || std::is_class_v<std::remove_pointer_t<T>> || std::is_array_v<T>))
     uni_auto(const T&) -> uni_auto<std::remove_cv_t<T>, 0, false, false, false, false, false>;
 
     /* Deals with lvalue references */
@@ -364,7 +369,7 @@ export namespace uninttp {
         requires std::is_class_v<T>
     uni_auto(T&) -> uni_auto<T, 0, false, true, false, true, false>;
     template <typename T>
-        requires (!std::is_class_v<T> && !std::is_class_v<std::remove_pointer_t<T>> && !std::is_array_v<T>)
+        requires (!(std::is_class_v<T> || std::is_class_v<std::remove_pointer_t<T>> || std::is_array_v<T>))
     uni_auto(T&) -> uni_auto<T, 0, false, false, false, true, false>;
 
     /* Deals with pointer to class types */
@@ -376,8 +381,9 @@ export namespace uninttp {
      * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
      */
     template <typename T1, typename T2>
-    constexpr auto operator->*(T1&& a, const uni_auto<T2, 0, false, false, false, false, false>& b) {
-        return [&] <typename ...Args>(Args&&... args) constexpr {
+    constexpr auto operator->*(T1&& a, const uni_auto<T2, 0, false, false, false, false, false>& b) noexcept {
+        return [&] <typename ...Args>(Args&&... args) constexpr
+        noexcept(((std::forward<T1>(a).*static_cast<T2>(b))(std::forward<Args>(args)...))) {
             return (std::forward<T1>(a).*static_cast<T2>(b))(std::forward<Args>(args)...);
         };
     }
@@ -386,8 +392,10 @@ export namespace uninttp {
      * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
      */
     template <typename T1, typename T2>
-    constexpr auto operator->*(const uni_auto<T1, 0, false, true, false, true, false>& a, const uni_auto<T2, 0, false, false, false, false, false>& b) {
-        return [&] <typename ...Args>(Args&&... args) constexpr {
+    constexpr auto operator->*(const uni_auto<T1, 0, false, true, false, true, false>& a,
+                               const uni_auto<T2, 0, false, false, false, false, false>& b) noexcept {
+        return [&] <typename ...Args>(Args&&... args) constexpr
+        noexcept(noexcept((static_cast<T1>(a).*static_cast<T2>(b))(std::forward<Args>(args)...))) {
             return (static_cast<T1>(a).*static_cast<T2>(b))(std::forward<Args>(args)...);
         };
     }
@@ -396,8 +404,9 @@ export namespace uninttp {
      * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
      */
     template <typename T1, typename T2>
-    constexpr auto operator->*(const uni_auto<T1, 0, false, true, false, true, false>& a, T2&& b) {
-        return [&] <typename ...Args>(Args&&... args) constexpr {
+    constexpr auto operator->*(const uni_auto<T1, 0, false, true, false, true, false>& a, T2&& b) noexcept {
+        return [&] <typename ...Args>(Args&&... args) constexpr
+        noexcept(noexcept((static_cast<T1>(a).*std::forward<T2>(b))(std::forward<Args>(args)...))) {
             return (static_cast<T1>(a).*std::forward<T2>(b))(std::forward<Args>(args)...);
         };
     }
@@ -406,8 +415,9 @@ export namespace uninttp {
      * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
      */
     template <typename T1, typename T2>
-    constexpr auto operator->*(T1* a, const uni_auto<T2, 0, false, false, false, false, false>& b) {
-        return [&] <typename ...Args>(Args&&... args) constexpr {
+    constexpr auto operator->*(T1* a, const uni_auto<T2, 0, false, false, false, false, false>& b) noexcept {
+        return [&] <typename ...Args>(Args&&... args) constexpr
+        noexcept(noexcept((a->*static_cast<T2>(b))(std::forward<Args>(args)...))) {
             return (a->*static_cast<T2>(b))(std::forward<Args>(args)...);
         };
     }
@@ -416,8 +426,10 @@ export namespace uninttp {
      * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
      */
     template <typename T1, typename T2>
-    constexpr auto operator->*(const uni_auto<T1, 0, false, true, false, false, true>& a, const uni_auto<T2, 0, false, false, false, false, false>& b) {
-        return [&] <typename ...Args>(Args&&... args) constexpr {
+    constexpr auto operator->*(const uni_auto<T1, 0, false, true, false, false, true>& a,
+                               const uni_auto<T2, 0, false, false, false, false, false>& b) noexcept {
+        return [&] <typename ...Args>(Args&&... args) constexpr
+        noexcept(noexcept((static_cast<T1*>(a)->*static_cast<T2>(b))(std::forward<Args>(args)...))) {
             return (static_cast<T1*>(a)->*static_cast<T2>(b))(std::forward<Args>(args)...);
         };
     }
@@ -426,8 +438,9 @@ export namespace uninttp {
      * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
      */
     template <typename T1, typename T2>
-    constexpr auto operator->*(const uni_auto<T1, 0, false, true, false, false, true>& a, T2&& b) {
-        return [&] <typename ...Args>(Args&&... args) constexpr {
+    constexpr auto operator->*(const uni_auto<T1, 0, false, true, false, false, true>& a, T2&& b) noexcept {
+        return [&] <typename ...Args>(Args&&... args) constexpr
+        noexcept(noexcept((static_cast<T1*>(a)->*std::forward<T2>(b))(std::forward<Args>(args)...))) {
             return (static_cast<T1*>(a)->*std::forward<T2>(b))(std::forward<Args>(args)...);
         };
     }
@@ -452,11 +465,9 @@ export namespace uninttp {
      */
     template <uni_auto Value>
     constexpr auto uni_auto_simplify_v =
-        static_cast<
-            std::conditional_t<std::is_array_v<std::remove_reference_t<uni_auto_t<Value>>>,
-                std::remove_extent_t<std::remove_reference_t<uni_auto_t<Value>>>*,
-                uni_auto_t<Value>>
-        >(Value);
+        static_cast<std::conditional_t<std::is_array_v<std::remove_reference_t<uni_auto_t<Value>>>,
+                                       std::remove_extent_t<std::remove_reference_t<uni_auto_t<Value>>>*,
+                                       uni_auto_t<Value>>>(Value);
 
     /**
      * @brief Fetches the type after "simplification" of a `uni_auto` object.
