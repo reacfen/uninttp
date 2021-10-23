@@ -355,7 +355,7 @@ namespace uninttp {
         requires std::is_class_v<T>
     uni_auto(const T&) -> uni_auto<std::remove_cv_t<T>, 0, false, true, false, false, false>;
     template <typename T>
-        requires (!std::is_class_v<T> && !std::is_array_v<T>)
+        requires (!std::is_class_v<T> && !std::is_class_v<std::remove_pointer_t<T>> && !std::is_array_v<T>)
     uni_auto(const T&) -> uni_auto<std::remove_cv_t<T>, 0, false, false, false, false, false>;
 
     /* Deals with lvalue references */
@@ -363,12 +363,12 @@ namespace uninttp {
         requires std::is_class_v<T>
     uni_auto(T&) -> uni_auto<T, 0, false, true, false, true, false>;
     template <typename T>
-        requires (!std::is_class_v<T> && !std::is_array_v<T>)
+        requires (!std::is_class_v<T> && !std::is_class_v<std::remove_pointer_t<T>> && !std::is_array_v<T>)
     uni_auto(T&) -> uni_auto<T, 0, false, false, false, true, false>;
 
     /* Deals with pointer to class types */
     template <typename T>
-        requires (std::is_class_v<T> && std::is_pointer_v<T>)
+        requires (std::is_pointer_v<T> && std::is_class_v<std::remove_pointer_t<T>>)
     uni_auto(T) -> uni_auto<std::remove_pointer_t<T>, 0, false, true, false, false, true>;
 
     /**
