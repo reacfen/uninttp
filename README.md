@@ -231,7 +231,7 @@ int main() {
 }
 ```
 
-Example using function pointers ([This currently does NOT compile on GCC.](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=97700)): [<kbd>Demo</kbd>](https://godbolt.org/z/fEPa56a1f)
+Example using function pointers ([This currently does NOT compile on GCC.](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=97700)): [<kbd>Demo</kbd>](https://godbolt.org/z/3hTojnere)
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <iostream>
@@ -392,7 +392,7 @@ The test suite can be found [here](https://godbolt.org/z/9e47e31Ps).
         fun2<arr>();
     }
     ```
-3)  Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to do something like this: [<kbd>Demo</kbd>](https://godbolt.org/z/1GTEET1rP)
+3)  Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to do something like this: [<kbd>Demo</kbd>](https://godbolt.org/z/8azzWbYfG)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <iostream>
@@ -411,7 +411,7 @@ The test suite can be found [here](https://godbolt.org/z/9e47e31Ps).
     void fun() {
         X = 2; // Assignment operator works as expected
 
-        // If you want to access 'p' directly, you would have to do either of the two below:
+        // If you want to access 'p' directly, you would have to call 'uni_auto_v' explicitly:
 
         // auto a = X.p;                // This will NOT work since the C++ Standard does not allow
                                         // overloading the dot operator (yet)
