@@ -159,7 +159,7 @@ int main() {
 > }
 > ```
 
-Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/8r9PvTqqr)
+Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/fevY8q878)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -176,7 +176,7 @@ struct Y {
 
 template <uni_auto A, uni_auto B>
 constexpr auto mul() {
-    return A.val * B.val; // Alternatively, you can write: 'return A->val * B->val;'
+    return A.val * B.val;
 }
 
 int main() {
@@ -392,9 +392,10 @@ The test suite can be found [here](https://godbolt.org/z/9e47e31Ps).
         fun2<arr>();
     }
     ```
-3)  Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to do something like this: [<kbd>Demo</kbd>](https://godbolt.org/z/be33WcbPx)
+3)  Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to do something like this: [<kbd>Demo</kbd>](https://godbolt.org/z/1GTEET1rP)
     ```cpp
     #include <uninttp/uni_auto.hpp>
+    #include <iostream>
     #include <cassert>
 
     using namespace uninttp;
@@ -410,15 +411,14 @@ The test suite can be found [here](https://godbolt.org/z/9e47e31Ps).
     void fun() {
         X = 2; // Assignment operator works as expected
 
+        // If you want to access 'p' directly, you would have to do either of the two below:
+
         // auto a = X.p;                // This will NOT work since the C++ Standard does not allow
                                         // overloading the dot operator (yet)
 
-        // If you want to access 'p' directly, you would have to do either of the two below:
-        const auto b = X->p;            // OK
-        // OR
         const auto c = uni_auto_v<X>.p; // OK
 
-        assert(b == c);                 // OK
+        std::cout << c << std::endl;    // 2
     }
 
     some_class some_obj;
