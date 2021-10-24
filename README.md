@@ -5,7 +5,7 @@ A universal type for non-type template parameters for C++20 or later.
 
 ## Installation:
 
-uninttp (***Uni***versal ***N***on-***T***ype ***T***emplate ***P***arameters) is a header-only library. You can either clone this repository or fetch one of the recent [releases](https://github.com/reacfen/uninttp/releases) at the time.
+uninttp (***Uni***versal ***N***on-***T***ype ***T***emplate ***P***arameters) is a header-only library. Just simply clone this repository and you are ready to go.
 
 Once that is done, you can simply include the header(s) and start using uninttp in your project:
 
