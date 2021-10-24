@@ -489,8 +489,8 @@ namespace uninttp {
         }
 
         template <typename U>
-        constexpr decltype(auto) operator->*(U&& b) const noexcept(noexcept(value->*b))
-            requires requires { value->*b; } {
+        constexpr decltype(auto) operator->*(U&& b) const noexcept(noexcept(value->*std::forward<U>(b)))
+            requires requires { value->*std::forward<U>(b); } {
             return value->*std::forward<U>(b);
         }
 
@@ -501,8 +501,8 @@ namespace uninttp {
         }
 
         template <typename U>
-        constexpr decltype(auto) operator,(U&& b) const noexcept(noexcept(value, b))
-            requires requires { value, b; } {
+        constexpr decltype(auto) operator,(U&& b) const noexcept(noexcept(value, std::forward<U>(b)))
+            requires requires { value, std::forward<U>(b); } {
             return value, std::forward<U>(b);
         }
 
