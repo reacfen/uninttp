@@ -40,7 +40,7 @@ int main() {
 
 And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays (or arrays or static storage duration) through it: [<kbd>Demo</kbd>](https://godbolt.org/z/oTGaj4eeY)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays (or arrays of static storage duration) through it: [<kbd>Demo</kbd>](https://godbolt.org/z/oTGaj4eeY)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -322,7 +322,7 @@ The test suite can be found [here](https://godbolt.org/z/9e47e31Ps).
 
 ## *Some slight restrictions of using `uni_auto` that might be useful to know*:
 
-1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to do something like this instead: [<kbd>Demo</kbd>](https://godbolt.org/z/njh1Wqrd9)
+1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to do something like this instead: [<kbd>Demo</kbd>](https://godbolt.org/z/9xohxzndo)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -338,20 +338,20 @@ The test suite can be found [here](https://godbolt.org/z/9e47e31Ps).
         static_assert(std::is_same_v<uni_auto_t<X>, double>);                                      // OK
 
         // Using 'uni_auto_v' and then using 'decltype()' and removing the const specifier from the type returned:
-        static_assert(std::is_same_v<std::remove_cv_t<decltype(uni_auto_v<X>)>, double>);          // OK
+        static_assert(std::is_same_v<std::remove_const_t<decltype(uni_auto_v<X>)>, double>);          // OK
 
         // Using 'uni_auto_simplify_t':
         static_assert(std::is_same_v<uni_auto_simplify_t<X>, double>);                             // OK
 
         // Using 'uni_auto_simplify_v' and then using 'decltype()' and removing the const specifier from the type returned:
-        static_assert(std::is_same_v<std::remove_cv_t<decltype(uni_auto_simplify_v<X>)>, double>); // OK
+        static_assert(std::is_same_v<std::remove_const_t<decltype(uni_auto_simplify_v<X>)>, double>); // OK
     }
 
     int main() {
         fun<>();
     }
     ```
-2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/Pc1ff9fjz)
+2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/7Mq5esrYW)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -370,9 +370,9 @@ The test suite can be found [here](https://godbolt.org/z/9e47e31Ps).
         // Using 'uni_auto_simplify_v':
         constexpr auto answer3 = uni_auto_simplify_v<X>;
 
-        static_assert(std::is_same_v<std::remove_cv_t<decltype(answer1)>, int>); // OK
-        static_assert(std::is_same_v<std::remove_cv_t<decltype(answer2)>, int>); // OK
-        static_assert(std::is_same_v<std::remove_cv_t<decltype(answer3)>, int>); // OK
+        static_assert(std::is_same_v<std::remove_const_t<decltype(answer1)>, int>); // OK
+        static_assert(std::is_same_v<std::remove_const_t<decltype(answer2)>, int>); // OK
+        static_assert(std::is_same_v<std::remove_const_t<decltype(answer3)>, int>); // OK
     }
 
     template <uni_auto Array>

@@ -523,17 +523,17 @@ export namespace uninttp {
     /* Deals with integral and enumeration types, pointers to objects, pointers to member functions and objects, nullptr */
     template <typename T>
         requires std::is_class_v<T>
-    uni_auto(const T&) -> uni_auto<std::remove_cv_t<T>, 0, false, true, false, false, false>;
+    uni_auto(const T&) -> uni_auto<const T, 0, false, true, false, false, false>;
     template <typename T>
-        requires (!(std::is_class_v<T> || std::is_class_v<std::remove_pointer_t<T>> || std::is_array_v<T>))
-    uni_auto(const T&) -> uni_auto<std::remove_cv_t<T>, 0, false, false, false, false, false>;
+        requires (!(std::is_class_v<std::remove_pointer_t<T>> || std::is_array_v<T>))
+    uni_auto(const T&) -> uni_auto<const T, 0, false, false, false, false, false>;
 
     /* Deals with lvalue references */
     template <typename T>
         requires std::is_class_v<T>
     uni_auto(T&) -> uni_auto<T, 0, false, true, false, true, false>;
     template <typename T>
-        requires (!(std::is_class_v<T> || std::is_class_v<std::remove_pointer_t<T>> || std::is_array_v<T>))
+        requires (!(std::is_class_v<std::remove_pointer_t<T>> || std::is_array_v<T>))
     uni_auto(T&) -> uni_auto<T, 0, false, false, false, true, false>;
 
     /* Deals with pointer to class types */
@@ -638,5 +638,5 @@ export namespace uninttp {
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
-    using uni_auto_simplify_t = std::remove_cv_t<decltype(uni_auto_simplify_v<Value>)>;
+    using uni_auto_simplify_t = std::remove_const_t<decltype(uni_auto_simplify_v<Value>)>;
 }
