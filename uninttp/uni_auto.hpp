@@ -80,12 +80,28 @@ namespace uninttp {
             return std::end(value);
         }
 
+        constexpr auto cbegin() const noexcept {
+            return std::cbegin(value);
+        }
+
+        constexpr auto cend() const noexcept {
+            return std::cend(value);
+        }
+
         constexpr auto rbegin() const noexcept {
             return std::rbegin(value);
         }
 
         constexpr auto rend() const noexcept {
             return std::rend(value);
+        }
+
+        constexpr auto crbegin() const noexcept {
+            return std::crbegin(value);
+        }
+
+        constexpr auto crend() const noexcept {
+            return std::crend(value);
         }
     };
 
@@ -124,12 +140,28 @@ namespace uninttp {
             return std::end(value);
         }
 
+        constexpr auto cbegin() const noexcept {
+            return std::cbegin(value);
+        }
+
+        constexpr auto cend() const noexcept {
+            return std::cend(value);
+        }
+
         constexpr auto rbegin() const noexcept {
             return std::rbegin(value);
         }
 
         constexpr auto rend() const noexcept {
             return std::rend(value);
+        }
+
+        constexpr auto crbegin() const noexcept {
+            return std::crbegin(value);
+        }
+
+        constexpr auto crend() const noexcept {
+            return std::crend(value);
         }
     };
 
@@ -668,19 +700,19 @@ namespace std {
     }
     template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
     constexpr auto cbegin(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) noexcept {
-        return std::cbegin(c.value);
+        return c.cbegin();
     }
     template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
     constexpr auto cend(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) noexcept {
-        return std::cend(c.value);
+        return c.cend();
     }
     template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
     constexpr auto crbegin(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) {
-        return std::crbegin(c.value);
+        return c.crbegin();
     }
     template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
     constexpr auto crend(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) {
-        return std::crend(c.value);
+        return c.crend();
     }
     template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
     constexpr auto to_array(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) {
