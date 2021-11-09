@@ -64,6 +64,10 @@ namespace uninttp {
             return N;
         }
         
+        constexpr auto swap(const uni_auto& other) const noexcept {
+            std::swap(value, other.value);
+        }
+
         constexpr auto data() const noexcept {
             return std::data(value);
         }
@@ -696,7 +700,7 @@ namespace uninttp {
 namespace std {
     template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
     constexpr auto swap(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& a, const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& b) noexcept {
-        return std::swap(a.value, b.value);
+        a.swap(b);
     }
     template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
     constexpr auto cbegin(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) noexcept {
