@@ -287,7 +287,7 @@ All the examples shown have used function templates to demonstrate the capabilit
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 > **Note**: *Some of the features portrayed in the test suite might not work on all compilers as C++20 support, as of writing this, is still in an experimental stage on most compilers*.
 
-The test suite can be found [here](https://godbolt.org/z/9e47e31Ps).
+The test suite can be found [here](https://godbolt.org/z/sh3s6z99j).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
@@ -296,7 +296,7 @@ The test suite can be found [here](https://godbolt.org/z/9e47e31Ps).
 <table>
     <thead>
         <tr>
-            <th style="width: 380px"></th>
+            <th style="width: 480px"></th>
             <th>Description</th>
         </tr>
     </thead>
@@ -351,16 +351,15 @@ The test suite can be found [here](https://godbolt.org/z/9e47e31Ps).
         fun<>();
     }
     ```
-2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/7Mq5esrYW)
+2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/P817E95xz)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
-    #include <array>
 
     using namespace uninttp;
 
     template <uni_auto X = 42>
-    void fun1() {
+    void fun() {
         // Using an explicit conversion statement:
         constexpr int answer1 = X;
 
@@ -375,24 +374,13 @@ The test suite can be found [here](https://godbolt.org/z/9e47e31Ps).
         static_assert(std::is_same_v<std::remove_const_t<decltype(answer3)>, int>); // OK
     }
 
-    template <uni_auto Array>
-    void fun2() {
-        auto arr = std::to_array(uni_auto_v<Array>);
-        
-        using T = typename decltype(arr)::value_type;
-        constexpr auto N = arr.size();
-
-        static_assert(std::is_same_v<decltype(arr), std::array<T, N>>); // OK
-    }
-
     int main() {
-        fun1<>();
-
-        constexpr int arr[] = {1, 2, 3, 4};
-        fun2<arr>();
+        fun<>();
     }
     ```
-3)  Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to do something like this: [<kbd>Demo</kbd>](https://godbolt.org/z/8azzWbYfG)
+3)  This is more or less an extension to the (2) restriction.
+
+    Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to do something like this: [<kbd>Demo</kbd>](https://godbolt.org/z/8azzWbYfG)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <iostream>

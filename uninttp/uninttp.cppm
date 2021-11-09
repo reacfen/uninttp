@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v2.3
+ * Version: v2.4
  *
  * Copyright (c) 2021 reacfen
  *
@@ -39,6 +39,7 @@ import <type_traits>
 import <iterator>
 import <cstddef>
 import <utility>
+import <array>
 
 export module uninttp.uni_auto;
 
@@ -46,11 +47,11 @@ export namespace uninttp {
     /**
      * @brief The `uni_auto` class type implementation
      */
-    template <typename, std::size_t, bool, bool, bool, bool, bool>
+    template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
     struct uni_auto;
 
-    template <typename T, std::size_t N, bool IsClassType, bool IsFunctionType>
-    struct uni_auto<T, N, true, IsClassType, IsFunctionType, false, false> {
+    template <typename T, std::size_t N, bool IsClassType>
+    struct uni_auto<T, N, true, IsClassType> {
         using type = T(&)[N];
         type value;
 
@@ -63,6 +64,14 @@ export namespace uninttp {
         static constexpr auto size() noexcept {
             return N;
         }
+        
+        constexpr auto data() const noexcept {
+            return std::data(value);
+        }
+
+        constexpr auto empty() const noexcept {
+            return std::empty(value);
+        }
 
         constexpr auto begin() const noexcept {
             return std::begin(value);
@@ -71,10 +80,18 @@ export namespace uninttp {
         constexpr auto end() const noexcept {
             return std::end(value);
         }
+
+        constexpr auto rbegin() const noexcept {
+            return std::rbegin(value);
+        }
+
+        constexpr auto rend() const noexcept {
+            return std::rend(value);
+        }
     };
 
-    template <typename T, std::size_t N, bool IsClassType, bool IsFunctionType>
-    struct uni_auto<const T, N, true, IsClassType, IsFunctionType, false, false> {
+    template <typename T, std::size_t N, bool IsClassType>
+    struct uni_auto<const T, N, true, IsClassType> {
         using type = const T(&)[N];
         std::remove_reference_t<type> value;
 
@@ -91,6 +108,14 @@ export namespace uninttp {
         static constexpr auto size() noexcept {
             return N;
         }
+        
+        constexpr auto data() const noexcept {
+            return std::data(value);
+        }
+
+        constexpr auto empty() const noexcept {
+            return std::empty(value);
+        }
 
         constexpr auto begin() const noexcept {
             return std::begin(value);
@@ -99,10 +124,18 @@ export namespace uninttp {
         constexpr auto end() const noexcept {
             return std::end(value);
         }
+
+        constexpr auto rbegin() const noexcept {
+            return std::rbegin(value);
+        }
+
+        constexpr auto rend() const noexcept {
+            return std::rend(value);
+        }
     };
 
     template <typename T>
-    struct uni_auto<T, 0, false, true, false, false, false> : T {
+    struct uni_auto<T, 0, false, true> : T {
         using type = T;
 
         constexpr uni_auto(type v) noexcept(noexcept(type{v})) : type{v} {}
@@ -113,7 +146,7 @@ export namespace uninttp {
     };
 
     template <typename T>
-    struct uni_auto<T, 0, false, true, false, false, true> {
+    struct uni_auto<T*, 0, false, true> {
         using type = T*&;
         type value;
 
@@ -129,7 +162,7 @@ export namespace uninttp {
     };
 
     template <typename R, typename ...Args>
-    struct uni_auto<R (Args ...), 0, false, false, true, false, false> {
+    struct uni_auto<R (Args ...), 0, false, false> {
         using type = R (*)(Args ...);
         type value;
 
@@ -147,7 +180,7 @@ export namespace uninttp {
     };
 
     template <typename T>
-    struct uni_auto<T, 0, false, false, false, false, false> {
+    struct uni_auto<T, 0, false, false> {
         using type = T;
         type value;
 
@@ -159,7 +192,7 @@ export namespace uninttp {
     };
 
     template <typename T>
-    struct uni_auto<T, 0, false, false, false, true, false> {
+    struct uni_auto<T&, 0, false, false> {
         using type = T&;
         type value;
 
@@ -242,7 +275,7 @@ export namespace uninttp {
     };
 
     template <typename T>
-    struct uni_auto<T, 0, false, true, false, true, false> {
+    struct uni_auto<T&, 0, false, true> {
         using type = T&;
         type value;
 
@@ -514,38 +547,38 @@ export namespace uninttp {
 
     /* Deals with C-style arrays */
     template <typename T, std::size_t N>
-    uni_auto(T (&)[N]) -> uni_auto<T, N, true, false, false, false, false>;
+    uni_auto(T (&)[N]) -> uni_auto<T, N, true, false>;
 
     /* Deals with function pointers */
     template <typename R, typename ...Args>
-    uni_auto(R (Args ...)) -> uni_auto<R (Args ...), 0, false, false, true, false, false>;
+    uni_auto(R (Args ...)) -> uni_auto<R (Args ...), 0, false, false>;
 
     /* Deals with integral and enumeration types, pointers to objects, pointers to member functions and objects, nullptr */
     template <typename T>
         requires std::is_class_v<T>
-    uni_auto(const T&) -> uni_auto<const T, 0, false, true, false, false, false>;
+    uni_auto(const T&) -> uni_auto<const T, 0, false, true>;
     template <typename T>
         requires (!(std::is_class_v<std::remove_pointer_t<T>> || std::is_array_v<T>))
-    uni_auto(const T&) -> uni_auto<const T, 0, false, false, false, false, false>;
+    uni_auto(const T&) -> uni_auto<const T, 0, false, false>;
 
     /* Deals with lvalue references */
     template <typename T>
         requires std::is_class_v<T>
-    uni_auto(T&) -> uni_auto<T, 0, false, true, false, true, false>;
+    uni_auto(T&) -> uni_auto<T&, 0, false, true>;
     template <typename T>
         requires (!(std::is_class_v<std::remove_pointer_t<T>> || std::is_array_v<T>))
-    uni_auto(T&) -> uni_auto<T, 0, false, false, false, true, false>;
+    uni_auto(T&) -> uni_auto<T&, 0, false, false>;
 
     /* Deals with pointer to class types */
     template <typename T>
         requires (std::is_pointer_v<T> && std::is_class_v<std::remove_pointer_t<T>>)
-    uni_auto(T) -> uni_auto<std::remove_pointer_t<T>, 0, false, true, false, false, true>;
+    uni_auto(T) -> uni_auto<T, 0, false, true>;
 
     /**
      * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
      */
     template <typename T1, typename T2>
-    constexpr auto operator->*(T1&& a, const uni_auto<T2, 0, false, false, false, false, false>& b) noexcept {
+    constexpr auto operator->*(T1&& a, const uni_auto<T2, 0, false, false>& b) noexcept {
         return [&] <typename ...Args>(Args&&... args) constexpr
         noexcept(noexcept((std::forward<T1>(a).*static_cast<T2>(b))(std::forward<Args>(args)...))) {
             return (std::forward<T1>(a).*static_cast<T2>(b))(std::forward<Args>(args)...);
@@ -556,19 +589,7 @@ export namespace uninttp {
      * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
      */
     template <typename T1, typename T2>
-    constexpr auto operator->*(const uni_auto<T1, 0, false, true, false, true, false>& a,
-                               const uni_auto<T2, 0, false, false, false, false, false>& b) noexcept {
-        return [&] <typename ...Args>(Args&&... args) constexpr
-        noexcept(noexcept((static_cast<T1>(a).*static_cast<T2>(b))(std::forward<Args>(args)...))) {
-            return (static_cast<T1>(a).*static_cast<T2>(b))(std::forward<Args>(args)...);
-        };
-    }
-
-    /**
-     * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
-     */
-    template <typename T1, typename T2>
-    constexpr auto operator->*(const uni_auto<T1, 0, false, true, false, true, false>& a, T2&& b) noexcept {
+    constexpr auto operator->*(const uni_auto<T1, 0, false, true>& a, T2&& b) noexcept {
         return [&] <typename ...Args>(Args&&... args) constexpr
         noexcept(noexcept((static_cast<T1>(a).*std::forward<T2>(b))(std::forward<Args>(args)...))) {
             return (static_cast<T1>(a).*std::forward<T2>(b))(std::forward<Args>(args)...);
@@ -579,8 +600,8 @@ export namespace uninttp {
      * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
      */
     template <typename T1, typename T2>
-    constexpr auto operator->*(T1* a, const uni_auto<T2, 0, false, false, false, false, false>& b) noexcept {
-        return [&] <typename ...Args>(Args&&... args) constexpr
+    constexpr auto operator->*(T1* a, const uni_auto<T2, 0, false, false>& b) noexcept {
+        return [a, &b] <typename ...Args>(Args&&... args) constexpr
         noexcept(noexcept((a->*static_cast<T2>(b))(std::forward<Args>(args)...))) {
             return (a->*static_cast<T2>(b))(std::forward<Args>(args)...);
         };
@@ -590,8 +611,8 @@ export namespace uninttp {
      * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
      */
     template <typename T1, typename T2>
-    constexpr auto operator->*(const uni_auto<T1, 0, false, true, false, false, true>& a,
-                               const uni_auto<T2, 0, false, false, false, false, false>& b) noexcept {
+    constexpr auto operator->*(const uni_auto<T1*, 0, false, true>& a,
+                               const uni_auto<T2, 0, false, false>& b) noexcept {
         return [&] <typename ...Args>(Args&&... args) constexpr
         noexcept(noexcept((static_cast<T1*>(a)->*static_cast<T2>(b))(std::forward<Args>(args)...))) {
             return (static_cast<T1*>(a)->*static_cast<T2>(b))(std::forward<Args>(args)...);
@@ -602,7 +623,7 @@ export namespace uninttp {
      * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
      */
     template <typename T1, typename T2>
-    constexpr auto operator->*(const uni_auto<T1, 0, false, true, false, false, true>& a, T2&& b) noexcept {
+    constexpr auto operator->*(const uni_auto<T1*, 0, false, true>& a, T2&& b) noexcept {
         return [&] <typename ...Args>(Args&&... args) constexpr
         noexcept(noexcept((static_cast<T1*>(a)->*std::forward<T2>(b))(std::forward<Args>(args)...))) {
             return (static_cast<T1*>(a)->*std::forward<T2>(b))(std::forward<Args>(args)...);
@@ -639,4 +660,31 @@ export namespace uninttp {
      */
     template <uni_auto Value>
     using uni_auto_simplify_t = std::remove_const_t<decltype(uni_auto_simplify_v<Value>)>;
+}
+
+export namespace std {
+    template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
+    constexpr auto swap(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& a, const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& b) noexcept {
+        return std::swap(a.value, b.value);
+    }
+    template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
+    constexpr auto cbegin(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) noexcept {
+        return std::cbegin(c.value);
+    }
+    template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
+    constexpr auto cend(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) noexcept {
+        return std::cend(c.value);
+    }
+    template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
+    constexpr auto crbegin(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) {
+        return std::crbegin(c.value);
+    }
+    template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
+    constexpr auto crend(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) {
+        return std::crend(c.value);
+    }
+    template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
+    constexpr auto to_array(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) {
+        return std::to_array(c.value);
+    }
 }
