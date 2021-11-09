@@ -635,7 +635,7 @@ export namespace uninttp {
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
-    using uni_auto_t = typename decltype(Value)::type;
+    using uni_auto_t = std::remove_const_t<typename decltype(Value)::type>;
 
     /**
      * @brief Fetches the actual value held by whatever `uni_auto` object is passed to it.
