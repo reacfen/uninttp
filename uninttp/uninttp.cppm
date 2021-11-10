@@ -700,25 +700,43 @@ export namespace uninttp {
 
 export namespace std {
     template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
+        requires (!std::is_const_v<T>)
     constexpr auto swap(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& a, const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& b) noexcept {
         a.swap(b);
     }
+
+    template <typename T1, typename T2, std::size_t N, bool IsArrayType, bool IsClassType>
+        requires (!std::is_const_v<T1>)
+    constexpr auto swap(const uninttp::uni_auto<T1, N, IsArrayType, IsClassType>& a, T2& b) noexcept {
+        std::swap(a.value, b);
+    }
+
+    template <typename T1, typename T2, std::size_t N, bool IsArrayType, bool IsClassType>
+        requires (!std::is_const_v<T2>)
+    constexpr auto swap(T1& a, const uninttp::uni_auto<T2, N, IsArrayType, IsClassType>& b) noexcept {
+        std::swap(a, b.value);
+    }
+
     template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
     constexpr auto cbegin(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) noexcept {
         return c.cbegin();
     }
+
     template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
     constexpr auto cend(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) noexcept {
         return c.cend();
     }
+
     template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
     constexpr auto crbegin(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) {
         return c.crbegin();
     }
+
     template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
     constexpr auto crend(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) {
         return c.crend();
     }
+
     template <typename T, std::size_t N, bool IsArrayType, bool IsClassType>
     constexpr auto to_array(const uninttp::uni_auto<T, N, IsArrayType, IsClassType>& c) {
         return std::to_array(c.value);
