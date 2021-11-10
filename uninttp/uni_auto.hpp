@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v2.4
+ * Version: v2.5
  *
  * Copyright (c) 2021 reacfen
  *
@@ -170,72 +170,16 @@ namespace uninttp {
     };
 
     template <typename T>
-        requires std::is_class_v<T>
-    struct uni_auto<T, false> : T {
-        using type = T;
-
-        constexpr uni_auto(type v) noexcept(noexcept(type{v})) : type{v} {}
-
-        constexpr operator type() const noexcept {
-            return *this;
-        }
-    };
-
-    template <typename T>
-        requires std::is_class_v<T>
-    struct uni_auto<T*, false> {
-        using type = T*&;
-        type value;
-
-        constexpr uni_auto(type v) noexcept : value{v} {}
-
-        constexpr operator type() const noexcept {
-            return value;
-        }
-
-        constexpr type operator->() const noexcept {
-            return value;
-        }
-    };
-
-    template <typename R, typename ...Args>
-    struct uni_auto<R (Args ...), false> {
-        using type = R (*)(Args ...);
-        type value;
-
-        constexpr uni_auto(type v) noexcept : value{v} {}
-
-        constexpr operator type() const noexcept {
-            return value;
-        }
-
-        constexpr auto operator&() const noexcept = delete;
-
-        constexpr R operator()(Args&&... args) const noexcept(noexcept(value(std::forward<Args>(args)...))) {
-            return value(std::forward<Args>(args)...);
-        }
-    };
-
-    template <typename T>
-        requires (!std::is_class_v<T>)
-    struct uni_auto<T, false> {
-        using type = T;
-        type value;
-
-        constexpr uni_auto(type v) noexcept(noexcept(type{v})) : value{v} {}
-
-        constexpr operator type() const noexcept {
-            return value;
-        }
-    };
-
-    template <typename T>
         requires (!std::is_class_v<T>)
     struct uni_auto<T&, false> {
-        using type = T&;
+        using type = std::conditional_t<std::is_const_v<T>, T, T&>;
         type value;
 
         constexpr uni_auto(type v) noexcept : value{v} {}
+
+        constexpr operator type() const noexcept {
+            return value;
+        }
 
         template <typename U>
         constexpr decltype(auto) operator=(U&& b) const noexcept(noexcept(value = std::forward<U>(b))) {
@@ -308,18 +252,22 @@ namespace uninttp {
             return value--;
         }
 
-        constexpr operator type() const noexcept {
-            return value;
+        constexpr auto operator&() const noexcept {
+            return &value;
         }
     };
 
     template <typename T>
         requires std::is_class_v<T>
     struct uni_auto<T&, false> {
-        using type = T&;
+        using type = std::conditional_t<std::is_const_v<T>, T, T&>;
         type value;
 
         constexpr uni_auto(type v) noexcept : value{v} {}
+
+        constexpr operator type() const noexcept {
+            return value;
+        }
 
         template <typename U>
         constexpr decltype(auto) operator=(U&& b) const noexcept(noexcept(value = std::forward<U>(b)))
@@ -579,9 +527,43 @@ namespace uninttp {
             requires requires { value, std::forward<U>(b); } {
             return value, std::forward<U>(b);
         }
+    };
+
+    template <typename T>
+        requires (!std::is_class_v<T>)
+    struct uni_auto<T&&, false> {
+        using type = T;
+        type value;
+
+        constexpr uni_auto(type v) noexcept(noexcept(type{v})) : value{v} {}
 
         constexpr operator type() const noexcept {
             return value;
+        }
+
+        constexpr auto operator&() const noexcept {
+            return &value;
+        }
+
+        constexpr auto operator->() const noexcept
+            requires std::is_pointer_v<type> {
+            return value;
+        }
+    };
+
+    template <typename T>
+        requires std::is_class_v<T>
+    struct uni_auto<T&&, false> : T {
+        using type = T;
+
+        constexpr uni_auto(type v) noexcept(noexcept(type{v})) : type{v} {}
+
+        constexpr operator type() const noexcept {
+            return *this;
+        }
+
+        constexpr auto operator&() const noexcept {
+            return this;
         }
     };
 
@@ -589,17 +571,15 @@ namespace uninttp {
     template <typename T, std::size_t N>
     uni_auto(T (&)[N]) -> uni_auto<T[N], true>;
 
-    /* Deals with function pointers */
-    template <typename R, typename ...Args>
-    uni_auto(R (Args ...)) -> uni_auto<R (Args ...), false>;
-
-    /* Deals with integral and enumeration types, pointers to objects, pointers to member functions and objects, nullptr */
-    template <typename T>
-    uni_auto(const T&) -> uni_auto<const T, false>;
-
-    /* Deals with lvalue references */
+    /* Deals with references, function pointers, integral and enumeration types, pointers to objects, pointers to member functions and objects, nullptr, etc. (Basically everything else) */
     template <typename T>
     uni_auto(T&) -> uni_auto<T&, false>;
+    // template <typename T>
+    // uni_auto(const T&&) -> uni_auto<const T&&, false>;
+    template <typename T>
+    uni_auto(T&&) -> uni_auto<T&&, false>;
+    //template <typename T>
+    //uni_auto(T) -> uni_auto<void, false>;
 
     /**
      * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
