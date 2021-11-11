@@ -46,11 +46,11 @@ namespace uninttp {
     /**
      * @brief The `uni_auto` class type implementation
      */
-    template <typename T, bool IsArrayType>
+    template <typename T>
     struct uni_auto;
 
     template <typename T, std::size_t N>
-    struct uni_auto<T[N], true> {
+    struct uni_auto<T[N]> {
         using type = T(&)[N];
         type value;
 
@@ -110,7 +110,7 @@ namespace uninttp {
     };
 
     template <typename T, std::size_t N>
-    struct uni_auto<const T[N], true> {
+    struct uni_auto<const T[N]> {
         using type = const T(&)[N];
         std::remove_reference_t<type> value;
 
@@ -171,8 +171,8 @@ namespace uninttp {
 
     template <typename T>
         requires (!std::is_class_v<T>)
-    struct uni_auto<T&, false> {
-        using type = std::conditional_t<std::is_const_v<T>, T, T&>;
+    struct uni_auto<T&> {
+        using type = T&;
         type value;
 
         constexpr uni_auto(type v) noexcept : value{v} {}
@@ -259,8 +259,8 @@ namespace uninttp {
 
     template <typename T>
         requires std::is_class_v<T>
-    struct uni_auto<T&, false> {
-        using type = std::conditional_t<std::is_const_v<T>, T, T&>;
+    struct uni_auto<T&> {
+        using type = T&;
         type value;
 
         constexpr uni_auto(type v) noexcept : value{v} {}
@@ -531,8 +531,8 @@ namespace uninttp {
 
     template <typename T>
         requires (!std::is_class_v<T>)
-    struct uni_auto<T&&, false> {
-        using type = T;
+    struct uni_auto<T&&> {
+        using type = std::conditional_t<std::is_function_v<T>, T*, T>;
         type value;
 
         constexpr uni_auto(type v) noexcept(noexcept(type{v})) : value{v} {}
@@ -553,7 +553,7 @@ namespace uninttp {
 
     template <typename T>
         requires std::is_class_v<T>
-    struct uni_auto<T&&, false> : T {
+    struct uni_auto<T&&> : T {
         using type = T;
 
         constexpr uni_auto(type v) noexcept(noexcept(type{v})) : type{v} {}
@@ -569,24 +569,23 @@ namespace uninttp {
 
     /* Deals with C-style arrays and fixed-size C-Strings */
     template <typename T, std::size_t N>
-    uni_auto(T (&)[N]) -> uni_auto<T[N], true>;
+    uni_auto(T (&)[N]) -> uni_auto<T[N]>;
 
-    /* Deals with references, function pointers, integral and enumeration types, pointers to objects, pointers to member functions and objects, nullptr, etc. (Basically everything else) */
+    /* Deals with lvalue references, function pointers, integral and enumeration types, pointers to objects, pointers to member functions and objects, nullptr, etc. (Basically everything else) */
     template <typename T>
-    uni_auto(T&) -> uni_auto<T&, false>;
-    // template <typename T>
-    // uni_auto(const T&&) -> uni_auto<const T&&, false>;
+        requires (!std::is_const_v<T>)
+    uni_auto(T&) -> uni_auto<T&>;
     template <typename T>
-    uni_auto(T&&) -> uni_auto<T&&, false>;
-    //template <typename T>
-    //uni_auto(T) -> uni_auto<void, false>;
+    uni_auto(const T&) -> uni_auto<T&&>;
+    template <typename T>
+    uni_auto(T&&) -> uni_auto<T&&>;
 
     /**
      * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
      */
     template <typename T1, typename T2>
         requires std::is_class_v<std::remove_reference_t<T1>> && std::is_member_function_pointer_v<T2>
-    constexpr auto operator->*(T1&& a, const uni_auto<T2, false>& b) noexcept {
+    constexpr auto operator->*(T1&& a, const uni_auto<T2>& b) noexcept {
         return [&] <typename ...Args>(Args&&... args) constexpr
         noexcept(noexcept((std::forward<T1>(a).*static_cast<T2>(b))(std::forward<Args>(args)...))) {
             return (std::forward<T1>(a).*static_cast<T2>(b))(std::forward<Args>(args)...);
@@ -598,7 +597,7 @@ namespace uninttp {
      */
     template <typename T1, typename T2>
         requires std::is_class_v<std::remove_reference_t<T1>> && std::is_member_function_pointer_v<T2>
-    constexpr auto operator->*(const uni_auto<T1, false>& a, T2&& b) noexcept {
+    constexpr auto operator->*(const uni_auto<T1>& a, T2&& b) noexcept {
         return [&] <typename ...Args>(Args&&... args) constexpr
         noexcept(noexcept((static_cast<T1>(a).*std::forward<T2>(b))(std::forward<Args>(args)...))) {
             return (static_cast<T1>(a).*std::forward<T2>(b))(std::forward<Args>(args)...);
@@ -610,7 +609,7 @@ namespace uninttp {
      */
     template <typename T1, typename T2>
         requires std::is_class_v<std::remove_reference_t<T1>> && std::is_member_function_pointer_v<T2>
-    constexpr auto operator->*(T1* a, const uni_auto<T2, false>& b) noexcept {
+    constexpr auto operator->*(T1* a, const uni_auto<T2>& b) noexcept {
         return [a, &b] <typename ...Args>(Args&&... args) constexpr
         noexcept(noexcept((a->*static_cast<T2>(b))(std::forward<Args>(args)...))) {
             return (a->*static_cast<T2>(b))(std::forward<Args>(args)...);
@@ -622,8 +621,8 @@ namespace uninttp {
      */
     template <typename T1, typename T2>
         requires std::is_class_v<std::remove_reference_t<T1>> && std::is_member_function_pointer_v<T2>
-    constexpr auto operator->*(const uni_auto<T1*, false>& a,
-                               const uni_auto<T2, false>& b) noexcept {
+    constexpr auto operator->*(const uni_auto<T1*>& a,
+                               const uni_auto<T2>& b) noexcept {
         return [&] <typename ...Args>(Args&&... args) constexpr
         noexcept(noexcept((static_cast<T1*>(a)->*static_cast<T2>(b))(std::forward<Args>(args)...))) {
             return (static_cast<T1*>(a)->*static_cast<T2>(b))(std::forward<Args>(args)...);
@@ -635,7 +634,7 @@ namespace uninttp {
      */
     template <typename T1, typename T2>
         requires std::is_class_v<std::remove_reference_t<T1>> && std::is_member_function_pointer_v<T2>
-    constexpr auto operator->*(const uni_auto<T1*, false>& a, T2&& b) noexcept {
+    constexpr auto operator->*(const uni_auto<T1*>& a, T2&& b) noexcept {
         return [&] <typename ...Args>(Args&&... args) constexpr
         noexcept(noexcept((static_cast<T1*>(a)->*std::forward<T2>(b))(std::forward<Args>(args)...))) {
             return (static_cast<T1*>(a)->*std::forward<T2>(b))(std::forward<Args>(args)...);
@@ -675,39 +674,39 @@ namespace uninttp {
 }
 
 namespace std {
-    template <typename T, bool IsArrayType>
+    template <typename T>
         requires (!std::is_const_v<T>)
-    constexpr auto swap(const uninttp::uni_auto<T, IsArrayType>& a, const uninttp::uni_auto<T, IsArrayType>& b) noexcept {
+    constexpr auto swap(const uninttp::uni_auto<T>& a, const uninttp::uni_auto<T>& b) noexcept {
         a.swap(b);
     }
-    template <typename T1, typename T2, bool IsArrayType>
+    template <typename T1, typename T2>
         requires (!std::is_const_v<T1>)
-    constexpr auto swap(const uninttp::uni_auto<T1, IsArrayType>& a, T2& b) noexcept {
+    constexpr auto swap(const uninttp::uni_auto<T1>& a, T2& b) noexcept {
         std::swap(a.value, b);
     }
-    template <typename T1, typename T2, bool IsArrayType>
+    template <typename T1, typename T2>
         requires (!std::is_const_v<T2>)
-    constexpr auto swap(T1& a, const uninttp::uni_auto<T2, IsArrayType>& b) noexcept {
+    constexpr auto swap(T1& a, const uninttp::uni_auto<T2>& b) noexcept {
         std::swap(a, b.value);
     }
-    template <typename T, bool IsArrayType>
-    constexpr auto cbegin(const uninttp::uni_auto<T, IsArrayType>& c) noexcept {
+    template <typename T>
+    constexpr auto cbegin(const uninttp::uni_auto<T>& c) noexcept {
         return c.cbegin();
     }
-    template <typename T, bool IsArrayType>
-    constexpr auto cend(const uninttp::uni_auto<T, IsArrayType>& c) noexcept {
+    template <typename T>
+    constexpr auto cend(const uninttp::uni_auto<T>& c) noexcept {
         return c.cend();
     }
-    template <typename T, bool IsArrayType>
-    constexpr auto crbegin(const uninttp::uni_auto<T, IsArrayType>& c) {
+    template <typename T>
+    constexpr auto crbegin(const uninttp::uni_auto<T>& c) {
         return c.crbegin();
     }
-    template <typename T, bool IsArrayType>
-    constexpr auto crend(const uninttp::uni_auto<T, IsArrayType>& c) {
+    template <typename T>
+    constexpr auto crend(const uninttp::uni_auto<T>& c) {
         return c.crend();
     }
-    template <typename T, bool IsArrayType>
-    constexpr auto to_array(const uninttp::uni_auto<T, IsArrayType>& c) {
+    template <typename T>
+    constexpr auto to_array(const uninttp::uni_auto<T>& c) {
         return std::to_array(c.value);
     }
 }
