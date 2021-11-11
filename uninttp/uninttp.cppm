@@ -531,8 +531,8 @@ export namespace uninttp {
     };
 
     template <typename T>
-        requires (!std::is_class_v<T>)
-    struct uni_auto<T&&> {
+        requires (!std::is_class_v<T> && !std::is_lvalue_reference_v<T>)
+    struct uni_auto<T> {
         using type = std::conditional_t<std::is_function_v<T>, T*, T>;
         type value;
 
@@ -553,8 +553,8 @@ export namespace uninttp {
     };
 
     template <typename T>
-        requires std::is_class_v<T>
-    struct uni_auto<T&&> : T {
+        requires (std::is_class_v<T> && !std::is_lvalue_reference_v<T>)
+    struct uni_auto<T> : T {
         using type = T;
 
         constexpr uni_auto(type v) noexcept(noexcept(type{v})) : type{v} {}
@@ -577,9 +577,9 @@ export namespace uninttp {
         requires (!std::is_const_v<T>)
     uni_auto(T&) -> uni_auto<T&>;
     template <typename T>
-    uni_auto(const T&) -> uni_auto<T&&>;
+    uni_auto(const T&) -> uni_auto<const T>;
     template <typename T>
-    uni_auto(T&&) -> uni_auto<T&&>;
+    uni_auto(T&&) -> uni_auto<T>;
 
     /**
      * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
