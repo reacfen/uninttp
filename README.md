@@ -317,10 +317,14 @@ The test suite can be found [here](https://godbolt.org/z/a4rGd4hTM).
             <td><code>uninttp::uni_auto_simplify_v&lt;uni_auto Value&gt;</code></td>
             <td>Converts the underlying value of the <code>uni_auto</code> object into its simplest form. If the value held is an array, it converts it into a pointer and returns that, otherwise it does the exact same thing as <code>uni_auto_v</code>.</td>
         </tr>
+        <tr>
+            <td><code>uninttp::propagate&lt;/* uni_auto/const auto& */ Value&gt;()</code></td>
+            <td>Constructs a `uni_auto` object using `Value`. Usually redundant except for one special case. (See (4) of [Restrictions](#restrictions) below.)</td>
+        </tr>
     </tbody>
 </table>
 
-## *Some slight restrictions of using `uni_auto` that might be useful to know*:
+## Restrictions:
 
 1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to do something like this instead: [<kbd>Demo</kbd>](https://godbolt.org/z/9xohxzndo)
     ```cpp
@@ -415,6 +419,28 @@ The test suite can be found [here](https://godbolt.org/z/a4rGd4hTM).
         fun<some_obj>();
     }
     ```
+
+4) Currently, `uni_auto` tends to break when passed constants with addresses of static-storage duration. This is due to the fact that both `constexpr` and constants of static-storage duration bind to a const reference, so it is impossible to determine which one was passed by the user. In such scenarios, the `propagate<Value>()` function ought to be used to do a manual conversion to a `uni_auto` object beforehand: [<kbd>Demo</kbd>](https://godbolt.org/z/Ed7axsfrK)
+
+```cpp
+#include <uninttp/uni_auto.hpp>
+#include <iostream>
+
+using namespace uninttp;
+
+template <uni_auto X>
+void p() {
+    std::cout << X << std::endl;
+}
+
+int main() {
+    static constexpr auto str = "String with static storage duration";
+
+    // p<str>();           // Doesn't work, sadly
+    
+    p<propagate<str>()>(); // OK!
+}
+```
 
 ## Playground:
 

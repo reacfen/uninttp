@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v2.5
+ * Version: v2.6
  *
  * Copyright (c) 2021 reacfen
  *
@@ -671,6 +671,25 @@ namespace uninttp {
      */
     template <uni_auto Value>
     using uni_auto_simplify_t = std::remove_const_t<decltype(uni_auto_simplify_v<Value>)>;
+
+    /**
+     * @brief Effectively propagates the value provided into a 'uni_auto' value by constructing the object beforehand
+     * @tparam Value The value to propagate
+     */
+    template <uni_auto Value>
+    constexpr auto propagate() {
+        return Value;
+    }
+
+    /**
+     * @brief Effectively propagates the value provided into a 'uni_auto' value by constructing the object beforehand
+     * @tparam Value The value to propagate
+     */
+    template <const auto& Value>
+        requires(!requires { propagate<uni_auto<std::remove_reference_t<decltype(Value)>>(Value)>(); })
+    constexpr uni_auto<decltype(Value)> propagate() {
+        return Value;
+    }
 }
 
 namespace std {
