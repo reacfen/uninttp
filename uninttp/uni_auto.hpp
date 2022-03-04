@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v2.6
+ * Version: v2.7
  *
  * Copyright (c) 2021 reacfen
  *
@@ -653,24 +653,35 @@ namespace uninttp {
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
-    constexpr uni_auto_t<Value> uni_auto_v = Value;
+    constexpr uni_auto_t<Value> uni_auto_v() { 
+        return Value;
+    }
 
     /**
-     * @brief Basically `uni_auto_v<Value>` but with an additional array-to-pointer conversion in case the passed object holds a reference to an array.
+     * @brief Basically `uni_auto_v<Value>()` but with an additional array-to-pointer conversion in case the passed object holds a reference to an array.
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
-    constexpr auto uni_auto_simplify_v =
-        static_cast<std::conditional_t<std::is_array_v<std::remove_reference_t<uni_auto_t<Value>>>,
-                                       std::remove_extent_t<std::remove_reference_t<uni_auto_t<Value>>>*,
-                                       uni_auto_t<Value>>>(Value);
+    requires std::is_array_v<std::remove_reference_t<uni_auto_t<Value>>>
+    constexpr auto uni_auto_simplify_v() {
+        return static_cast<std::remove_extent_t<std::remove_reference_t<uni_auto_t<Value>>>*>(Value);
+    }
+
+    /**
+     * @brief Basically `uni_auto_v<Value>()` but with an additional array-to-pointer conversion in case the passed object holds a reference to an array.
+     * @tparam Value The `uni_auto` object
+     */
+    template <uni_auto Value>
+    constexpr uni_auto_t<Value> uni_auto_simplify_v() {
+        return Value;
+    }
 
     /**
      * @brief Fetches the type after "simplification" of a `uni_auto` object.
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
-    using uni_auto_simplify_t = std::remove_const_t<decltype(uni_auto_simplify_v<Value>)>;
+    using uni_auto_simplify_t = std::remove_const_t<decltype(uni_auto_simplify_v<Value>())>;
 
     /**
      * @brief Effectively propagates the value provided into a 'uni_auto' value by constructing the object beforehand

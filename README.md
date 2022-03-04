@@ -252,7 +252,7 @@ int main() {
 }
 ```
 
-Example using a pointer to a member function: [<kbd>Demo</kbd>](https://godbolt.org/z/6YqqPne9M)
+Example using a pointer to a member function: [<kbd>Demo</kbd>](https://godbolt.org/z/ejfKP851a)
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <iostream>
@@ -267,7 +267,7 @@ struct some_class {
 
 template <uni_auto Value>
 void call_member(const some_class& x, int& y) {
-    (x->*Value)(y); // Alternatively, you can write: '(x.*uni_auto_v<Value>)(y);'
+    (x->*Value)(y); // Alternatively, you can write: '(x.*uni_auto_v<Value>())(y);'
 }
 
 int main() {
@@ -296,7 +296,7 @@ The test suite can be found [here](https://godbolt.org/z/a4rGd4hTM).
 <table>
     <thead>
         <tr>
-            <th style="width: 480px"></th>
+            <th></th>
             <th>Description</th>
         </tr>
     </thead>
@@ -310,23 +310,23 @@ The test suite can be found [here](https://godbolt.org/z/a4rGd4hTM).
             <td>Gives the decayed type of the value held by the <code>uni_auto</code> object.<br>If the <code>uni_auto</code> object holds an array, it decays it into a pointer and returns the pointer as the type.<br>This feature is often useful for doing compile-time type-checking, SFINAE and for defining certain constraints on the types held by the <code>uni_auto</code> object.</td>
         </tr>
         <tr>
-            <td><code>uninttp::uni_auto_v&lt;uni_auto Value&gt;</code></td>
+            <td><code>uninttp::uni_auto_v&lt;uni_auto Value&gt;()</code></td>
             <td>Effectively extracts the underlying value held by the <code>uni_auto</code> object passed to it.</td>
         </tr>
         <tr>
-            <td><code>uninttp::uni_auto_simplify_v&lt;uni_auto Value&gt;</code></td>
+            <td><code>uninttp::uni_auto_simplify_v&lt;uni_auto Value&gt;()</code></td>
             <td>Converts the underlying value of the <code>uni_auto</code> object into its simplest form. If the value held is an array, it converts it into a pointer and returns that, otherwise it does the exact same thing as <code>uni_auto_v</code>.</td>
         </tr>
         <tr>
-            <td><code>uninttp::propagate&lt;/* uni_auto/const auto& */ Value&gt;()</code></td>
-            <td>Constructs a `uni_auto` object using `Value`. Usually redundant except for one special case. (See (4) of [Restrictions](#restrictions) below.)</td>
+            <td><code>uninttp::propagate&lt;/* uni_auto / const auto& */ Value&gt;()</code></td>
+            <td>Constructs a `uni_auto` object using `Value`. Usually redundant except for one special case. (See (4) of [Restrictions](https://github.com/reacfen/uninttp#restrictions) below.)</td>
         </tr>
     </tbody>
 </table>
 
 ## Restrictions:
 
-1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to do something like this instead: [<kbd>Demo</kbd>](https://godbolt.org/z/9xohxzndo)
+1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to do something like this instead: [<kbd>Demo</kbd>](https://godbolt.org/z/Gf861s7Ta)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -336,26 +336,26 @@ The test suite can be found [here](https://godbolt.org/z/a4rGd4hTM).
     template <uni_auto X = 1.89>
     void fun() {
         // This doesn't work for obvious reasons
-        // static_assert(std::same_as<decltype(X), double>);                                       // Error
+        // static_assert(std::same_as<decltype(X), double>);                                            // Error
 
         // Using 'uni_auto_t':
-        static_assert(std::is_same_v<uni_auto_t<X>, double>);                                      // OK
+        static_assert(std::is_same_v<uni_auto_t<X>, double>);                                           // OK
 
         // Using 'uni_auto_v' and then using 'decltype()' and removing the const specifier from the type returned:
-        static_assert(std::is_same_v<std::remove_const_t<decltype(uni_auto_v<X>)>, double>);          // OK
+        static_assert(std::is_same_v<std::remove_const_t<decltype(uni_auto_v<X>())>, double>);          // OK
 
         // Using 'uni_auto_simplify_t':
-        static_assert(std::is_same_v<uni_auto_simplify_t<X>, double>);                             // OK
+        static_assert(std::is_same_v<uni_auto_simplify_t<X>, double>);                                  // OK
 
         // Using 'uni_auto_simplify_v' and then using 'decltype()' and removing the const specifier from the type returned:
-        static_assert(std::is_same_v<std::remove_const_t<decltype(uni_auto_simplify_v<X>)>, double>); // OK
+        static_assert(std::is_same_v<std::remove_const_t<decltype(uni_auto_simplify_v<X>())>, double>); // OK
     }
 
     int main() {
         fun<>();
     }
     ```
-2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/P817E95xz)
+2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/vMbdv3z9o)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -368,10 +368,10 @@ The test suite can be found [here](https://godbolt.org/z/a4rGd4hTM).
         constexpr int answer1 = X;
 
         // Using 'uni_auto_v':
-        constexpr auto answer2 = uni_auto_v<X>;
+        constexpr auto answer2 = uni_auto_v<X>();
 
         // Using 'uni_auto_simplify_v':
-        constexpr auto answer3 = uni_auto_simplify_v<X>;
+        constexpr auto answer3 = uni_auto_simplify_v<X>();
 
         static_assert(std::is_same_v<std::remove_const_t<decltype(answer1)>, int>); // OK
         static_assert(std::is_same_v<std::remove_const_t<decltype(answer2)>, int>); // OK
@@ -384,7 +384,7 @@ The test suite can be found [here](https://godbolt.org/z/a4rGd4hTM).
     ```
 3)  This is more or less an extension to the (2) restriction.
 
-    Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to do something like this: [<kbd>Demo</kbd>](https://godbolt.org/z/8azzWbYfG)
+    Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to do something like this: [<kbd>Demo</kbd>](https://godbolt.org/z/sWETzdKjP)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <iostream>
@@ -405,12 +405,12 @@ The test suite can be found [here](https://godbolt.org/z/a4rGd4hTM).
 
         // If you want to access 'p' directly, you would have to call 'uni_auto_v' explicitly:
 
-        // auto a = X.p;                // This will NOT work since the C++ Standard does not allow
-                                        // overloading the dot operator (yet)
+        // auto a = X.p;                   // This will NOT work since the C++ Standard does not allow
+                                           // overloading the dot operator (yet)
 
-        const auto c = uni_auto_v<X>.p; // OK
+        const auto c = uni_auto_v<X>().p; // OK
 
-        std::cout << c << std::endl;    // 2
+        std::cout << c << std::endl;      // 2
     }
 
     some_class some_obj;
