@@ -319,7 +319,7 @@ The test suite can be found [here](https://godbolt.org/z/a4rGd4hTM).
         </tr>
         <tr>
             <td><code>uninttp::propagate&lt;/* uni_auto / const auto& */ Value&gt;()</code></td>
-            <td>Constructs a `uni_auto` object using `Value`. Usually redundant except for one special case. (See (4) of [Restrictions](https://github.com/reacfen/uninttp#restrictions) below.)</td>
+            <td>Constructs a `uni_auto` object using `Value`. Usually redundant except for one special case. (See (4) of <a href="https://github.com/reacfen/uninttp#restrictions">Restrictions</a> below.)</td>
         </tr>
     </tbody>
 </table>
