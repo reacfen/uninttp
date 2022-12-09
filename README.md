@@ -444,4 +444,4 @@ int main() {
 
 ## Playground:
 
-If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/r7qhvGP4a) you go!
+If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/q6qjWjfv3) you go!

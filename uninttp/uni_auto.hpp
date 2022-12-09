@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v2.7
+ * Version: v2.8
  *
  * Copyright (c) 2021 reacfen
  *
@@ -54,7 +54,7 @@ namespace uninttp {
         using type = T(&)[N];
         type value;
 
-        constexpr uni_auto(type v) noexcept : value{v} {}
+        constexpr uni_auto(type v) noexcept(noexcept(value{v})) : value{v} {}
 
         constexpr operator type() const noexcept {
             return value;
@@ -64,7 +64,7 @@ namespace uninttp {
             return N;
         }
         
-        constexpr auto swap(const uni_auto& other) const noexcept {
+        constexpr auto swap(const uni_auto& other) const noexcept(noexcept(std::swap(value, other.value))) {
             std::swap(value, other.value);
         }
 
@@ -653,7 +653,7 @@ namespace uninttp {
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
-    constexpr uni_auto_t<Value> uni_auto_v() { 
+    constexpr uni_auto_t<Value> uni_auto_v() noexcept { 
         return Value;
     }
 
@@ -663,7 +663,7 @@ namespace uninttp {
      */
     template <uni_auto Value>
     requires std::is_array_v<std::remove_reference_t<uni_auto_t<Value>>>
-    constexpr auto uni_auto_simplify_v() {
+    constexpr auto uni_auto_simplify_v() noexcept {
         return static_cast<std::remove_extent_t<std::remove_reference_t<uni_auto_t<Value>>>*>(Value);
     }
 
@@ -672,7 +672,7 @@ namespace uninttp {
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
-    constexpr uni_auto_t<Value> uni_auto_simplify_v() {
+    constexpr uni_auto_t<Value> uni_auto_simplify_v() noexcept {
         return Value;
     }
 
@@ -688,7 +688,7 @@ namespace uninttp {
      * @tparam Value The value to propagate
      */
     template <uni_auto Value>
-    constexpr auto propagate() {
+    constexpr auto propagate() noexcept {
         return Value;
     }
 
@@ -698,7 +698,7 @@ namespace uninttp {
      */
     template <const auto& Value>
         requires(!requires { propagate<uni_auto<std::remove_reference_t<decltype(Value)>>(Value)>(); })
-    constexpr uni_auto<decltype(Value)> propagate() {
+    constexpr uni_auto<decltype(Value)> propagate() noexcept {
         return Value;
     }
 }
@@ -706,37 +706,37 @@ namespace uninttp {
 namespace std {
     template <typename T>
         requires (!std::is_const_v<T>)
-    constexpr auto swap(const uninttp::uni_auto<T>& a, const uninttp::uni_auto<T>& b) noexcept {
+    constexpr auto swap(const uninttp::uni_auto<T>& a, const uninttp::uni_auto<T>& b) noexcept(noexcept(a.swap(b))) {
         a.swap(b);
     }
     template <typename T1, typename T2>
         requires (!std::is_const_v<T1>)
-    constexpr auto swap(const uninttp::uni_auto<T1>& a, T2& b) noexcept {
+    constexpr auto swap(const uninttp::uni_auto<T1>& a, T2& b) noexcept(noexcept(std::swap(a.value, b))) {
         std::swap(a.value, b);
     }
     template <typename T1, typename T2>
         requires (!std::is_const_v<T2>)
-    constexpr auto swap(T1& a, const uninttp::uni_auto<T2>& b) noexcept {
+    constexpr auto swap(T1& a, const uninttp::uni_auto<T2>& b) noexcept(noexcept(std::swap(a, b.value))) {
         std::swap(a, b.value);
     }
     template <typename T>
-    constexpr auto cbegin(const uninttp::uni_auto<T>& c) noexcept {
+    constexpr auto cbegin(const uninttp::uni_auto<T>& c) noexcept(noexcept(c.cbegin())) {
         return c.cbegin();
     }
     template <typename T>
-    constexpr auto cend(const uninttp::uni_auto<T>& c) noexcept {
+    constexpr auto cend(const uninttp::uni_auto<T>& c) noexcept(noexcept(c.cend())) {
         return c.cend();
     }
     template <typename T>
-    constexpr auto crbegin(const uninttp::uni_auto<T>& c) {
+    constexpr auto crbegin(const uninttp::uni_auto<T>& c) noexcept(noexcept(c.crbegin())) {
         return c.crbegin();
     }
     template <typename T>
-    constexpr auto crend(const uninttp::uni_auto<T>& c) {
+    constexpr auto crend(const uninttp::uni_auto<T>& c) noexcept(noexcept(c.crend())) {
         return c.crend();
     }
     template <typename T>
-    constexpr auto to_array(const uninttp::uni_auto<T>& c) {
+    constexpr auto to_array(const uninttp::uni_auto<T>& c) noexcept(noexcept(std::to_array(c.value))) {
         return std::to_array(c.value);
     }
 }
