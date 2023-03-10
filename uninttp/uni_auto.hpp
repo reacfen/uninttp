@@ -54,7 +54,7 @@ namespace uninttp {
         using type = T(&)[N];
         type value;
 
-        constexpr uni_auto(type v) noexcept(noexcept(value{v})) : value{v} {}
+        constexpr uni_auto(type v) noexcept(noexcept(type{v})) : value{v} {}
 
         constexpr operator type() const noexcept {
             return value;
