@@ -10,9 +10,9 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v2.8
+ * Version: v2.9
  *
- * Copyright (c) 2021 reacfen
+ * Copyright (c) 2021-23 reacfen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,7 @@ export namespace uninttp {
         using type = T(&)[N];
         type value;
 
-        constexpr uni_auto(type v) noexcept(noexcept(type{v})) : value{v} {}
+        constexpr uni_auto(type v) noexcept(std::is_nothrow_constructible_v<type, type&>) : value{v} {}
 
         constexpr operator type() const noexcept {
             return value;
@@ -536,7 +536,7 @@ export namespace uninttp {
         using type = std::conditional_t<std::is_function_v<T>, T*, T>;
         type value;
 
-        constexpr uni_auto(type v) noexcept(noexcept(type{v})) : value{v} {}
+        constexpr uni_auto(type v) noexcept(std::is_nothrow_constructible_v<type, type&>) : value{v} {}
 
         constexpr operator type() const noexcept {
             return value;
@@ -557,7 +557,7 @@ export namespace uninttp {
     struct uni_auto<T> : T {
         using type = T;
 
-        constexpr uni_auto(type v) noexcept(noexcept(type{v})) : type{v} {}
+        constexpr uni_auto(type v) noexcept(std::is_nothrow_constructible_v<type, type&>) : type{v} {}
 
         constexpr operator type() const noexcept {
             return *this;
@@ -704,7 +704,7 @@ export namespace uninttp {
     }
 }
 
-namespace std {
+export namespace std {
     template <typename T>
         requires (!std::is_const_v<T>)
     constexpr auto swap(const uninttp::uni_auto<T>& a, const uninttp::uni_auto<T>& b) noexcept(noexcept(a.swap(b))) {

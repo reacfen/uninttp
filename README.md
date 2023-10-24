@@ -132,7 +132,7 @@ int main() {
 }
 ```
 
-> **Note**: One can also "*exploit*" the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/sW9Thfaex)
+> **Note**: One can also use the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/sW9Thfaex)
 > 
 > ```cpp
 > #include <uninttp/uni_auto.hpp>
@@ -210,7 +210,7 @@ int main() {
 
 And it doesn't end there! `uni_auto` can also work with pointers to objects:
 
-Example using a pointer to an object: [<kbd>Demo</kbd>](https://godbolt.org/z/oPbPjxjj1)
+Example using a pointer to an object: [<kbd>Demo</kbd>](https://godbolt.org/z/jdnnTG1rz)
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <iostream>
@@ -226,12 +226,12 @@ int y = 3;
 
 int main() {
     static constexpr int x = 2;
-    print_pointer<&x>(); // Prints the location of 'x' in memory
-    print_pointer<&y>(); // Prints the location of 'y' in memory
+    print_pointer<&x>(); // Prints the location/address of 'x' in memory
+    print_pointer<&y>(); // Prints the location/address of 'y' in memory
 }
 ```
 
-Example using function pointers ([This currently does NOT compile on GCC.](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=97700)): [<kbd>Demo</kbd>](https://godbolt.org/z/3hTojnere)
+Example using function pointers: [<kbd>Demo</kbd>](https://godbolt.org/z/3hTojnere)
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <iostream>
@@ -285,9 +285,8 @@ All the examples shown have used function templates to demonstrate the capabilit
 ## Test suite:
 
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
-> **Note**: *Some of the features portrayed in the test suite might not work on all compilers as C++20 support, as of writing this, is still in an experimental stage on most compilers*.
 
-The test suite can be found [here](https://godbolt.org/z/hWYE6Gsn9).
+The test suite can be found [here](https://godbolt.org/z/YrsjYrqzx).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
@@ -303,30 +302,30 @@ The test suite can be found [here](https://godbolt.org/z/hWYE6Gsn9).
     <tbody>
         <tr>
             <td><code>uninttp::uni_auto_t&lt;uni_auto Value&gt;</code></td>
-            <td>Gives the type of the underlying value held by the <code>uni_auto</code> object passed to it.</td>
+            <td>Gives the type of the underlying value held by <code>Value</code>.</td>
         </tr>
         <tr>
             <td><code>uninttp::uni_auto_simplify_t&lt;uni_auto Value&gt;</code></td>
-            <td>Gives the decayed type of the value held by the <code>uni_auto</code> object.<br>If the <code>uni_auto</code> object holds an array, it decays it into a pointer and returns the pointer as the type.<br>This feature is often useful for doing compile-time type-checking, SFINAE and for defining certain constraints on the types held by the <code>uni_auto</code> object.</td>
+            <td>Gives the decayed type of the value held by <code>Value</code>.<br>If <code>Value</code> holds an array, it decays it into a pointer and returns the pointer as the type.<br>This feature is often useful for doing compile-time type-checking, SFINAE and for defining certain constraints on the types held by <code>Value</code>.</td>
         </tr>
         <tr>
             <td><code>uninttp::uni_auto_v&lt;uni_auto Value&gt;()</code></td>
-            <td>Effectively extracts the underlying value held by the <code>uni_auto</code> object passed to it.</td>
+            <td>Effectively extracts the underlying value held by <code>Value</code>.</td>
         </tr>
         <tr>
             <td><code>uninttp::uni_auto_simplify_v&lt;uni_auto Value&gt;()</code></td>
-            <td>Converts the underlying value of the <code>uni_auto</code> object into its simplest form. If the value held is an array, it converts it into a pointer and returns that, otherwise it does the exact same thing as <code>uni_auto_v</code>.</td>
+            <td>Converts the underlying value of <code>Value</code> into its simplest form. If the value held is an array, it converts it into a pointer and returns that, otherwise it does the exact same thing as <code>uni_auto_v</code>.</td>
         </tr>
         <tr>
             <td><code>uninttp::propagate&lt;/* uni_auto / const auto& */ Value&gt;()</code></td>
-            <td>Constructs a `uni_auto` object using `Value`. Usually redundant except for one special case. (See (4) of <a href="https://github.com/reacfen/uninttp#restrictions">Restrictions</a> below.)</td>
+            <td>Constructs a <code>uni_auto</code> object using <code>Value</code>. Usually redundant except for one special case. (See (4) of <a href="https://github.com/reacfen/uninttp#restrictions">Restrictions</a> below.)</td>
         </tr>
     </tbody>
 </table>
 
 ## Restrictions:
 
-1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to do something like this instead: [<kbd>Demo</kbd>](https://godbolt.org/z/Gf861s7Ta)
+1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t` or `uni_auto_simplify_t`: [<kbd>Demo</kbd>](https://godbolt.org/z/4vvPo545T)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -335,7 +334,7 @@ The test suite can be found [here](https://godbolt.org/z/hWYE6Gsn9).
 
     template <uni_auto X = 1.89>
     void fun() {
-        // This doesn't work for obvious reasons
+        // This doesn't work for obvious reasons:
         // static_assert(std::same_as<decltype(X), double>);                                            // Error
 
         // Using 'uni_auto_t':
@@ -355,7 +354,7 @@ The test suite can be found [here](https://godbolt.org/z/hWYE6Gsn9).
         fun<>();
     }
     ```
-2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/vMbdv3z9o)
+2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/8hMjKMe5s)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -364,6 +363,9 @@ The test suite can be found [here](https://godbolt.org/z/hWYE6Gsn9).
 
     template <uni_auto X = 42>
     void fun() {
+        // The conversion operator doesn't get invoked in this case:
+        // constexpr auto answer0 = X;
+        
         // Using an explicit conversion statement:
         constexpr int answer1 = X;
 
@@ -373,9 +375,9 @@ The test suite can be found [here](https://godbolt.org/z/hWYE6Gsn9).
         // Using 'uni_auto_simplify_v':
         constexpr auto answer3 = uni_auto_simplify_v<X>();
 
-        static_assert(std::is_same_v<std::remove_const_t<decltype(answer1)>, int>); // OK
-        static_assert(std::is_same_v<std::remove_const_t<decltype(answer2)>, int>); // OK
-        static_assert(std::is_same_v<std::remove_const_t<decltype(answer3)>, int>); // OK
+        static_assert(std::is_same_v<decltype(answer1), const int>); // OK
+        static_assert(std::is_same_v<decltype(answer2), const int>); // OK
+        static_assert(std::is_same_v<decltype(answer3), const int>); // OK
     }
 
     int main() {
@@ -384,7 +386,7 @@ The test suite can be found [here](https://godbolt.org/z/hWYE6Gsn9).
     ```
 3)  This is more or less an extension to the (2) restriction.
 
-    Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to do something like this: [<kbd>Demo</kbd>](https://godbolt.org/z/sWETzdKjP)
+    Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to do use `uni_auto_v` to extract the value manually: [<kbd>Demo</kbd>](https://godbolt.org/z/oehM638zT)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <iostream>
@@ -401,13 +403,13 @@ The test suite can be found [here](https://godbolt.org/z/hWYE6Gsn9).
 
     template <uni_auto X>
     void fun() {
-        X = 2; // Assignment operator works as expected
-
-        // If you want to access 'p' directly, you would have to call 'uni_auto_v' explicitly:
+        // Assignment operator works as expected
+        X = 2;
 
         // auto a = X.p;                   // This will NOT work since the C++ Standard does not allow
                                            // overloading the dot operator (yet)
 
+        // If you want to access 'p' directly, you would have to call 'uni_auto_v' explicitly:
         const auto c = uni_auto_v<X>().p; // OK
 
         std::cout << c << std::endl;      // 2
