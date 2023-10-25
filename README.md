@@ -40,7 +40,7 @@ int main() {
 
 And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays (or arrays of static storage duration) through it: [<kbd>Demo</kbd>](https://godbolt.org/z/oTGaj4eeY)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays (or arrays of static storage duration) through it: [<kbd>Demo</kbd>](https://godbolt.org/z/166xzbT64)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -83,14 +83,14 @@ int main() {
     // Passing a string literal
     static_assert(std::string_view(shift<"foobar", 3>()) == "bar"); // OK
 
-    // Passing an array marked as 'constexpr'
+    // Passing an array marked as `constexpr`
     constexpr int arr1[] = { 1, 8, 9, 20 };
     print_array<arr1>();                                            // 1 8 9 20
 
     // Passing an array of static storage duration
     print_array<arr2>();                                            // 1 2 4 8
 
-    // Passing an 'std::array' object
+    // Passing an `std::array` object
     print_array<std::array { 1, 4, 6, 9 }>();                       // 1 4 6 9
 }
 ```
@@ -113,7 +113,7 @@ int main() {
 }
 ```
 
-You can also enforce a type by adding a constraint: [<kbd>Demo</kbd>](https://godbolt.org/z/ETfG3Y5G5)
+You can also enforce a type by adding a constraint: [<kbd>Demo</kbd>](https://godbolt.org/z/daxs6YGsK)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -122,7 +122,7 @@ You can also enforce a type by adding a constraint: [<kbd>Demo</kbd>](https://go
 using namespace uninttp;
 
 template <uni_auto Value>
-// 'uni_auto_simplify_t<Value>' gives you the simplified type for type-checking convenience
+// `uni_auto_simplify_t<Value>` gives you the simplified type for type-checking convenience
 requires std::same_as<uni_auto_simplify_t<Value>, const char*>
 void only_accepts_strings() {}
 
@@ -159,7 +159,7 @@ int main() {
 > }
 > ```
 
-Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/fevY8q878)
+Unsurprisingly, one can pass trivial `struct`s through `uni_auto` as well: [<kbd>Demo</kbd>](https://godbolt.org/z/n5rqYdd95)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -210,7 +210,7 @@ int main() {
 
 And it doesn't end there! `uni_auto` can also work with pointers to objects:
 
-Example using a pointer to an object: [<kbd>Demo</kbd>](https://godbolt.org/z/jdnnTG1rz)
+Example using a pointer to an object: [<kbd>Demo</kbd>](https://godbolt.org/z/j4z5aEf61)
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <iostream>
@@ -226,8 +226,8 @@ int y = 3;
 
 int main() {
     static constexpr int x = 2;
-    print_pointer<&x>(); // Prints the location/address of 'x' in memory
-    print_pointer<&y>(); // Prints the location/address of 'y' in memory
+    print_pointer<&x>(); // Prints the location/address of `x` in memory
+    print_pointer<&y>(); // Prints the location/address of `y` in memory
 }
 ```
 
@@ -252,7 +252,7 @@ int main() {
 }
 ```
 
-Example using a pointer to a member function: [<kbd>Demo</kbd>](https://godbolt.org/z/ejfKP851a)
+Example using a pointer to a member function: [<kbd>Demo</kbd>](https://godbolt.org/z/P9E16e9Y5)
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <iostream>
@@ -267,7 +267,7 @@ struct some_class {
 
 template <uni_auto Value>
 void call_member(const some_class& x, int& y) {
-    (x->*Value)(y); // Alternatively, you can write: '(x.*uni_auto_v<Value>())(y);'
+    (x->*Value)(y); // Alternatively, you can write: `(x.*uni_auto_v<Value>)(y);`
 }
 
 int main() {
@@ -286,7 +286,7 @@ All the examples shown have used function templates to demonstrate the capabilit
 
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 
-The test suite can be found [here](https://godbolt.org/z/YrsjYrqzx).
+The test suite can be found [here](https://godbolt.org/z/a4714vr8M).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
@@ -309,11 +309,11 @@ The test suite can be found [here](https://godbolt.org/z/YrsjYrqzx).
             <td>Gives the decayed type of the value held by <code>Value</code>.<br>If <code>Value</code> holds an array, it decays it into a pointer and returns the pointer as the type.<br>This feature is often useful for doing compile-time type-checking, SFINAE and for defining certain constraints on the types held by <code>Value</code>.</td>
         </tr>
         <tr>
-            <td><code>uninttp::uni_auto_v&lt;uni_auto Value&gt;()</code></td>
+            <td><code>uninttp::uni_auto_v&lt;uni_auto Value&gt;</code></td>
             <td>Effectively extracts the underlying value held by <code>Value</code>.</td>
         </tr>
         <tr>
-            <td><code>uninttp::uni_auto_simplify_v&lt;uni_auto Value&gt;()</code></td>
+            <td><code>uninttp::uni_auto_simplify_v&lt;uni_auto Value&gt;</code></td>
             <td>Converts the underlying value of <code>Value</code> into its simplest form. If the value held is an array, it converts it into a pointer and returns that, otherwise it does the exact same thing as <code>uni_auto_v</code>.</td>
         </tr>
         <tr>
@@ -325,7 +325,7 @@ The test suite can be found [here](https://godbolt.org/z/YrsjYrqzx).
 
 ## Restrictions:
 
-1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t` or `uni_auto_simplify_t`: [<kbd>Demo</kbd>](https://godbolt.org/z/4vvPo545T)
+1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t` or `uni_auto_simplify_t`: [<kbd>Demo</kbd>](https://godbolt.org/z/jbqY4vYYn)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -335,26 +335,26 @@ The test suite can be found [here](https://godbolt.org/z/YrsjYrqzx).
     template <uni_auto X = 1.89>
     void fun() {
         // This doesn't work for obvious reasons:
-        // static_assert(std::same_as<decltype(X), double>);                                            // Error
+        // static_assert(std::same_as<decltype(X), double>);                                          // Error
 
-        // Using 'uni_auto_t':
-        static_assert(std::is_same_v<uni_auto_t<X>, double>);                                           // OK
+        // Using `uni_auto_t`:
+        static_assert(std::is_same_v<uni_auto_t<X>, double>);                                         // OK
 
-        // Using 'uni_auto_v' and then using 'decltype()' and removing the const specifier from the type returned:
-        static_assert(std::is_same_v<std::remove_const_t<decltype(uni_auto_v<X>())>, double>);          // OK
+        // Using `uni_auto_v` and then using `decltype()` and removing the const specifier from the type returned:
+        static_assert(std::is_same_v<std::remove_const_t<decltype(uni_auto_v<X>)>, double>);          // OK
 
-        // Using 'uni_auto_simplify_t':
-        static_assert(std::is_same_v<uni_auto_simplify_t<X>, double>);                                  // OK
+        // Using `uni_auto_simplify_t`:
+        static_assert(std::is_same_v<uni_auto_simplify_t<X>, double>);                                // OK
 
-        // Using 'uni_auto_simplify_v' and then using 'decltype()' and removing the const specifier from the type returned:
-        static_assert(std::is_same_v<std::remove_const_t<decltype(uni_auto_simplify_v<X>())>, double>); // OK
+        // Using `uni_auto_simplify_v` and then using `decltype()` and removing the const specifier from the type returned:
+        static_assert(std::is_same_v<std::remove_const_t<decltype(uni_auto_simplify_v<X>)>, double>); // OK
     }
 
     int main() {
         fun<>();
     }
     ```
-2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/8hMjKMe5s)
+2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/fGsa94v3d)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -369,11 +369,11 @@ The test suite can be found [here](https://godbolt.org/z/YrsjYrqzx).
         // Using an explicit conversion statement:
         constexpr int answer1 = X;
 
-        // Using 'uni_auto_v':
-        constexpr auto answer2 = uni_auto_v<X>();
+        // Using `uni_auto_v`:
+        constexpr auto answer2 = uni_auto_v<X>;
 
-        // Using 'uni_auto_simplify_v':
-        constexpr auto answer3 = uni_auto_simplify_v<X>();
+        // Using `uni_auto_simplify_v`:
+        constexpr auto answer3 = uni_auto_simplify_v<X>;
 
         static_assert(std::is_same_v<decltype(answer1), const int>); // OK
         static_assert(std::is_same_v<decltype(answer2), const int>); // OK
@@ -386,7 +386,7 @@ The test suite can be found [here](https://godbolt.org/z/YrsjYrqzx).
     ```
 3)  This is more or less an extension to the (2) restriction.
 
-    Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to do use `uni_auto_v` to extract the value manually: [<kbd>Demo</kbd>](https://godbolt.org/z/oehM638zT)
+    Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to do use `uni_auto_v` to extract the value manually: [<kbd>Demo</kbd>](https://godbolt.org/z/ss9613EaK)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <iostream>
@@ -406,13 +406,13 @@ The test suite can be found [here](https://godbolt.org/z/YrsjYrqzx).
         // Assignment operator works as expected
         X = 2;
 
-        // auto a = X.p;                   // This will NOT work since the C++ Standard does not allow
-                                           // overloading the dot operator (yet)
+        // auto a = X.p;                // This will NOT work since the C++ Standard does not allow
+                                        // overloading the dot operator (yet)
 
-        // If you want to access 'p' directly, you would have to call 'uni_auto_v' explicitly:
-        const auto c = uni_auto_v<X>().p; // OK
+        // If you want to access `p` directly, you would have to call `uni_auto_v` explicitly:
+        const auto c = uni_auto_v<X>.p; // OK
 
-        std::cout << c << std::endl;      // 2
+        std::cout << c << std::endl;    // 2
     }
 
     some_class some_obj;
@@ -422,7 +422,7 @@ The test suite can be found [here](https://godbolt.org/z/YrsjYrqzx).
     }
     ```
 
-4) Currently, `uni_auto` tends to break when passed constants with addresses of static-storage duration. This is due to the fact that both `constexpr` and constants of static-storage duration bind to a const reference, so it is impossible to determine which one was passed by the user. In such scenarios, the `propagate<Value>()` function ought to be used to do a manual conversion to a `uni_auto` object beforehand: [<kbd>Demo</kbd>](https://godbolt.org/z/Ed7axsfrK)
+4) Currently, `uni_auto` tends to break when passed constants with addresses of static-storage duration. This is due to the fact that both `constexpr` and constants of static-storage duration bind to a const reference, so it is impossible to determine which one was passed by the user. In such scenarios, the `propagate<Value>()` function ought to be used to do a manual conversion to a `uni_auto` object beforehand: [<kbd>Demo</kbd>](https://godbolt.org/z/98zKno6G1)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>

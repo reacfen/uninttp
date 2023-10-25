@@ -582,7 +582,7 @@ export namespace uninttp {
     uni_auto(T&&) -> uni_auto<T>;
 
     /**
-     * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
+     * @brief Member access `operator->*()` overload for convenience working with `uni_auto` and pointers to member functions.
      */
     template <typename T1, typename T2>
         requires std::is_class_v<std::remove_reference_t<T1>> && std::is_member_function_pointer_v<T2>
@@ -594,7 +594,7 @@ export namespace uninttp {
     }
 
     /**
-     * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
+     * @brief Member access `operator->*()` overload for convenience working with `uni_auto` and pointers to member functions.
      */
     template <typename T1, typename T2>
         requires std::is_class_v<std::remove_reference_t<T1>> && std::is_member_function_pointer_v<T2>
@@ -606,7 +606,7 @@ export namespace uninttp {
     }
 
     /**
-     * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
+     * @brief Member access `operator->*()` overload for convenience working with `uni_auto` and pointers to member functions.
      */
     template <typename T1, typename T2>
         requires std::is_class_v<std::remove_reference_t<T1>> && std::is_member_function_pointer_v<T2>
@@ -618,7 +618,7 @@ export namespace uninttp {
     }
 
     /**
-     * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
+     * @brief Member access `operator->*()` overload for convenience working with `uni_auto` and pointers to member functions.
      */
     template <typename T1, typename T2>
         requires std::is_class_v<std::remove_reference_t<T1>> && std::is_member_function_pointer_v<T2>
@@ -631,7 +631,7 @@ export namespace uninttp {
     }
 
     /**
-     * @brief Member access `operator->*()` overload for convenience working with 'uni_auto' and pointers to member functions.
+     * @brief Member access `operator->*()` overload for convenience working with `uni_auto` and pointers to member functions.
      */
     template <typename T1, typename T2>
         requires std::is_class_v<std::remove_reference_t<T1>> && std::is_member_function_pointer_v<T2>
@@ -654,38 +654,32 @@ export namespace uninttp {
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
-    constexpr uni_auto_t<Value> uni_auto_v() noexcept { 
-        return Value;
-    }
+    constexpr uni_auto_t<Value> uni_auto_v = Value;
 
     /**
-     * @brief Basically `uni_auto_v<Value>()` but with an additional array-to-pointer conversion in case the passed object holds a reference to an array.
+     * @brief Basically `uni_auto_v<Value>` but with an additional array-to-pointer conversion in case the passed object holds a reference to an array.
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
-    requires std::is_array_v<std::remove_reference_t<uni_auto_t<Value>>>
-    constexpr auto uni_auto_simplify_v() noexcept {
-        return static_cast<std::remove_extent_t<std::remove_reference_t<uni_auto_t<Value>>>*>(Value);
-    }
+    constexpr uni_auto_t<Value> uni_auto_simplify_v = Value;
 
     /**
-     * @brief Basically `uni_auto_v<Value>()` but with an additional array-to-pointer conversion in case the passed object holds a reference to an array.
+     * @brief Basically `uni_auto_v<Value>` but with an additional array-to-pointer conversion in case the passed object holds a reference to an array.
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
-    constexpr uni_auto_t<Value> uni_auto_simplify_v() noexcept {
-        return Value;
-    }
+        requires std::is_array_v<std::remove_reference_t<uni_auto_t<Value>>>
+    constexpr std::remove_extent_t<std::remove_reference_t<uni_auto_t<Value>>>* uni_auto_simplify_v<Value> = Value;
 
     /**
      * @brief Fetches the type after "simplification" of a `uni_auto` object.
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
-    using uni_auto_simplify_t = std::remove_const_t<decltype(uni_auto_simplify_v<Value>())>;
+    using uni_auto_simplify_t = std::remove_const_t<decltype(uni_auto_simplify_v<Value>)>;
 
     /**
-     * @brief Effectively propagates the value provided into a 'uni_auto' value by constructing the object beforehand
+     * @brief Effectively propagates/converts the value provided into a `uni_auto` object by constructing the object beforehand.
      * @tparam Value The value to propagate
      */
     template <uni_auto Value>
@@ -694,11 +688,11 @@ export namespace uninttp {
     }
 
     /**
-     * @brief Effectively propagates the value provided into a 'uni_auto' value by constructing the object beforehand
+     * @brief Effectively propagates/converts the value provided into a `uni_auto` object by constructing the object beforehand.
      * @tparam Value The value to propagate
      */
-    template <const auto& Value>
-        requires(!requires { propagate<uni_auto<std::remove_reference_t<decltype(Value)>>(Value)>(); })
+    template <auto& Value>
+        requires (std::is_const_v<std::remove_reference_t<decltype(Value)>> && !requires { propagate<uni_auto<std::remove_const_t<std::remove_reference_t<decltype(Value)>>>(Value)>(); })
     constexpr uni_auto<decltype(Value)> propagate() noexcept {
         return Value;
     }
