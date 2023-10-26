@@ -40,7 +40,7 @@ int main() {
 
 And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays (or arrays of static storage duration) through it: [<kbd>Demo</kbd>](https://godbolt.org/z/166xzbT64)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays (or arrays of static storage duration) through it: [<kbd>Demo</kbd>](https://godbolt.org/z/7Yenobzob)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -77,8 +77,6 @@ void print_array() {
     std::cout << std::endl;
 }
 
-static int arr2[] = {1, 2, 4, 8};
-
 int main() {
     // Passing a string literal
     static_assert(std::string_view(shift<"foobar", 3>()) == "bar"); // OK
@@ -88,6 +86,7 @@ int main() {
     print_array<arr1>();                                            // 1 8 9 20
 
     // Passing an array of static storage duration
+    static int arr2[] = {1, 2, 4, 8};
     print_array<arr2>();                                            // 1 2 4 8
 
     // Passing an `std::array` object
@@ -286,7 +285,7 @@ All the examples shown have used function templates to demonstrate the capabilit
 
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 
-The test suite can be found [here](https://godbolt.org/z/a4714vr8M).
+The test suite can be found [here](https://godbolt.org/z/YvaTfnnW7).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
@@ -317,7 +316,7 @@ The test suite can be found [here](https://godbolt.org/z/a4714vr8M).
             <td>Converts the underlying value of <code>Value</code> into its simplest form. If the value held is an array, it converts it into a pointer and returns that, otherwise it does the exact same thing as <code>uni_auto_v</code>.</td>
         </tr>
         <tr>
-            <td><code>uninttp::propagate&lt;/* uni_auto / const auto& */ Value&gt;()</code></td>
+            <td><code>uninttp::propagate&lt;/* uni_auto / auto& */ Value&gt;()</code></td>
             <td>Constructs a <code>uni_auto</code> object using <code>Value</code>. Usually redundant except for one special case. (See (4) of <a href="https://github.com/reacfen/uninttp#restrictions">Restrictions</a> below.)</td>
         </tr>
     </tbody>
