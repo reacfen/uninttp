@@ -40,7 +40,7 @@ int main() {
 
 And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals and `constexpr`-marked arrays (or arrays of static storage duration) through it: [<kbd>Demo</kbd>](https://godbolt.org/z/7Yenobzob)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc. through it: [<kbd>Demo</kbd>](https://godbolt.org/z/sb9KbfPeY)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -59,22 +59,22 @@ constexpr auto shift() {
 template <uni_auto Array>
 void print_array() {
     // Using range-based for loop
-    for (const auto& elem : Array)
+    for (auto elem : Array)
         std::cout << elem << " ";
     
-    std::cout << std::endl;
+    std::cout << '\n';
 
     // Using iterators
     for (auto it = std::begin(Array); it != std::end(Array); ++it)
         std::cout << *it << " ";
     
-    std::cout << std::endl;
+    std::cout << '\n';
 
-    // Index-based for loop
+    // Using index-based for loop
     for (std::size_t i = 0; i < std::size(Array); i++)
         std::cout << Array[i] << " ";
     
-    std::cout << std::endl;
+    std::cout << '\n';
 }
 
 int main() {
@@ -94,7 +94,7 @@ int main() {
 }
 ```
 
-You can also use it with parameter packs, obviously: [<kbd>Demo</kbd>](https://godbolt.org/z/Kqhr3dYE7)
+You can also use it with parameter packs, obviously: [<kbd>Demo</kbd>](https://godbolt.org/z/v1McfhGdf)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -104,7 +104,7 @@ using namespace uninttp;
 
 template <uni_auto ...Values>
 void print() {
-    ((std::cout << Values << " "), ...) << std::endl;
+    ((std::cout << Values << " "), ...) << '\n';
 }
 
 int main() {
@@ -131,7 +131,7 @@ int main() {
 }
 ```
 
-> **Note**: One can also use the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/sW9Thfaex)
+> **Note**: One can also use the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/oYWGoxb81)
 > 
 > ```cpp
 > #include <uninttp/uni_auto.hpp>
@@ -143,12 +143,12 @@ int main() {
 > template <uni_auto Value>
 > requires std::same_as<uni_auto_simplify_t<Value>, const char*>
 > void do_something() {
->     std::cout << "A string was passed" << std::endl;
+>     std::cout << "A string was passed" << '\n';
 > }
 > template <uni_auto Value>
 > requires std::same_as<uni_auto_simplify_t<Value>, int>
 > void do_something() {
->     std::cout << "An integer was passed" << std::endl;
+>     std::cout << "An integer was passed" << '\n';
 > }
 > 
 > int main() {
@@ -209,24 +209,30 @@ int main() {
 
 And it doesn't end there! `uni_auto` can also work with pointers to objects:
 
-Example using a pointer to an object: [<kbd>Demo</kbd>](https://godbolt.org/z/j4z5aEf61)
+Example using a pointer to an object: [<kbd>Demo</kbd>](https://godbolt.org/z/hPsnT4fP7)
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <iostream>
 
 using namespace uninttp;
 
-template <uni_auto p>
+template <uni_auto X>
+void mutate_pointer() {
+    *X = 42;
+}
+
+template <uni_auto X>
 void print_pointer() {
-    std::cout << p << std::endl;
+    std::cout << *X << '\n';
 }
 
 int y = 3;
 
 int main() {
     static constexpr int x = 2;
-    print_pointer<&x>(); // Prints the location/address of `x` in memory
-    print_pointer<&y>(); // Prints the location/address of `y` in memory
+    print_pointer<&x>();  // 2
+    mutate_pointer<&y>(); // Modifies the value of `y` indirectly through pointer access
+    print_pointer<&y>();  // 42
 }
 ```
 
@@ -251,7 +257,7 @@ int main() {
 }
 ```
 
-Example using a pointer to a member function: [<kbd>Demo</kbd>](https://godbolt.org/z/P9E16e9Y5)
+Example using a pointer to a member function: [<kbd>Demo</kbd>](https://godbolt.org/z/n11T94v7E)
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <iostream>
@@ -266,7 +272,7 @@ struct some_class {
 
 template <uni_auto Value>
 void call_member(const some_class& x, int& y) {
-    (x->*Value)(y); // Alternatively, you can write: `(x.*uni_auto_v<Value>)(y);`
+    (x.*uni_auto_v<Value>)(y);
 }
 
 int main() {
@@ -275,7 +281,27 @@ int main() {
 
     call_member<&some_class::some_member>(x, y);
 
-    std::cout << y << std::endl;
+    std::cout << y << '\n';
+}
+```
+
+Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/qx4na1fba)
+```cpp
+#include <uninttp/uni_auto.hpp>
+#include <iostream>
+
+using namespace uninttp;
+
+template <uni_auto Value>
+void fun() {
+    Value = 49;
+}
+
+int main() {
+    static int x = 42;
+    std::cout << x << '\n'; // 42
+    fun<x>();
+    std::cout << x << '\n'; // 49
 }
 ```
 
@@ -285,7 +311,7 @@ All the examples shown have used function templates to demonstrate the capabilit
 
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 
-The test suite can be found [here](https://godbolt.org/z/YvaTfnnW7).
+The test suite can be found [here](https://godbolt.org/z/146W8ssj8).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
@@ -294,8 +320,8 @@ The test suite can be found [here](https://godbolt.org/z/YvaTfnnW7).
 <table>
     <thead>
         <tr>
-            <th></th>
-            <th>Description</th>
+            <th width="45%"></th>
+            <th width="55%">Description</th>
         </tr>
     </thead>
     <tbody>
@@ -305,26 +331,22 @@ The test suite can be found [here](https://godbolt.org/z/YvaTfnnW7).
         </tr>
         <tr>
             <td><code>uninttp::uni_auto_simplify_t&lt;uni_auto Value&gt;</code></td>
-            <td>Gives the decayed type of the value held by <code>Value</code>.<br>If <code>Value</code> holds an array, it decays it into a pointer and returns the pointer as the type.<br>This feature is often useful for doing compile-time type-checking, SFINAE and for defining certain constraints on the types held by <code>Value</code>.</td>
+            <td>Gives the simplified type of the value held by <code>Value</code>.<br>If <code>Value</code> holds an array, it condenses it into a pointer and returns the pointer as the type. It also removes any lvalue or rvalue references (if possible) from the type returned.<br>This feature is often useful for doing compile-time type-checking, SFINAE and for defining certain constraints on the types held by <code>Value</code>.</td>
         </tr>
         <tr>
             <td><code>uninttp::uni_auto_v&lt;uni_auto Value&gt;</code></td>
-            <td>Effectively extracts the underlying value held by <code>Value</code>.</td>
+            <td>Extracts the underlying value held by <code>Value</code>.</td>
         </tr>
         <tr>
             <td><code>uninttp::uni_auto_simplify_v&lt;uni_auto Value&gt;</code></td>
-            <td>Converts the underlying value of <code>Value</code> into its simplest form. If the value held is an array, it converts it into a pointer and returns that, otherwise it does the exact same thing as <code>uni_auto_v</code>.</td>
-        </tr>
-        <tr>
-            <td><code>uninttp::propagate&lt;/* uni_auto / auto& */ Value&gt;()</code></td>
-            <td>Constructs a <code>uni_auto</code> object using <code>Value</code>. Usually redundant except for one special case. (See (4) of <a href="https://github.com/reacfen/uninttp#restrictions">Restrictions</a> below.)</td>
+            <td>Converts the underlying value of <code>Value</code> into its simplest form. If the value held is an array, it converts it into a pointer and also casts away any lvalue and rvalue references (if possible).</td>
         </tr>
     </tbody>
 </table>
 
 ## Restrictions:
 
-1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t` or `uni_auto_simplify_t`: [<kbd>Demo</kbd>](https://godbolt.org/z/jbqY4vYYn)
+1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t` or `uni_auto_simplify_t`: [<kbd>Demo</kbd>](https://godbolt.org/z/n355orPcs)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -350,17 +372,17 @@ The test suite can be found [here](https://godbolt.org/z/YvaTfnnW7).
     }
 
     int main() {
-        fun<>();
+        fun<1.89>();
     }
     ```
-2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/fGsa94v3d)
+2) There may be some cases where conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object: [<kbd>Demo</kbd>](https://godbolt.org/z/xMqzWWhET)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
 
     using namespace uninttp;
 
-    template <uni_auto X = 42>
+    template <uni_auto X>
     void fun() {
         // The conversion operator doesn't get invoked in this case:
         // constexpr auto answer0 = X;
@@ -380,12 +402,12 @@ The test suite can be found [here](https://godbolt.org/z/YvaTfnnW7).
     }
 
     int main() {
-        fun<>();
+        fun<42>();
     }
     ```
 3)  This is more or less an extension to the (2) restriction.
 
-    Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to do use `uni_auto_v` to extract the value manually: [<kbd>Demo</kbd>](https://godbolt.org/z/ss9613EaK)
+    Using lvalue references of class types with `uninttp::uni_auto` is a little tricky as the dot operator does not function as expected. Instead, one would have to use `uni_auto_v` to extract the value manually: [<kbd>Demo</kbd>](https://godbolt.org/z/YTj6WY5MM)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <iostream>
@@ -408,41 +430,18 @@ The test suite can be found [here](https://godbolt.org/z/YvaTfnnW7).
         // auto a = X.p;                // This will NOT work since the C++ Standard does not allow
                                         // overloading the dot operator (yet)
 
-        // If you want to access `p` directly, you would have to call `uni_auto_v` explicitly:
+        // If you want to access the member `p` directly, you would have to call `uni_auto_v` explicitly:
         const auto c = uni_auto_v<X>.p; // OK
 
-        std::cout << c << std::endl;    // 2
+        std::cout << c << '\n';         // 2
     }
 
-    some_class some_obj;
-
     int main() {
+        static some_class some_obj;
         fun<some_obj>();
     }
     ```
 
-4) Currently, `uni_auto` tends to break when passed constants with addresses of static-storage duration. This is due to the fact that both `constexpr` and constants of static-storage duration bind to a const reference, so it is impossible to determine which one was passed by the user. In such scenarios, the `propagate<Value>()` function ought to be used to do a manual conversion to a `uni_auto` object beforehand: [<kbd>Demo</kbd>](https://godbolt.org/z/98zKno6G1)
-
-```cpp
-#include <uninttp/uni_auto.hpp>
-#include <iostream>
-
-using namespace uninttp;
-
-template <uni_auto X>
-void p() {
-    std::cout << X << std::endl;
-}
-
-int main() {
-    static constexpr auto str = "String with static storage duration";
-
-    // p<str>();           // Doesn't work, sadly
-    
-    p<propagate<str>()>(); // OK!
-}
-```
-
 ## Playground:
 
-If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/snxnn4459) you go!
+If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/99YevEPd1) you go!
