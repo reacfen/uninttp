@@ -13,7 +13,7 @@ Once that is done, you can simply include the necessary header(s) and start usin
 #include <uninttp/uni_auto.hpp>
 ```
 
-uninttp also has a C++ module version, so if your compiler supports [C++20 modules](https://en.cppreference.com/w/cpp/language/modules), you can do something like this instead of including the whole header file into your project:
+uninttp also has a C++ module version, so, if your compiler supports [C++20 modules](https://en.cppreference.com/w/cpp/language/modules), you can do something like this instead of including the whole header file into your project:
 
 ```cpp
 import uninttp.uni_auto; // Improves compilation speed
@@ -40,7 +40,7 @@ int main() {
 
 And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc. through it: [<kbd>Demo</kbd>](https://godbolt.org/z/sb9KbfPeY)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc. through it: [<kbd>Demo</kbd>](https://godbolt.org/z/YWbKo5ff9)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -58,21 +58,21 @@ constexpr auto shift() {
 
 template <uni_auto Array>
 void print_array() {
-    // Using range-based for loop
+    // Using a range-based `for`-loop
     for (auto elem : Array)
-        std::cout << elem << " ";
+        std::cout << elem << ' ';
     
     std::cout << '\n';
 
     // Using iterators
     for (auto it = std::begin(Array); it != std::end(Array); ++it)
-        std::cout << *it << " ";
+        std::cout << *it << ' ';
     
     std::cout << '\n';
 
-    // Using index-based for loop
+    // Using an index-based `for`-loop
     for (std::size_t i = 0; i < std::size(Array); i++)
-        std::cout << Array[i] << " ";
+        std::cout << Array[i] << ' ';
     
     std::cout << '\n';
 }
@@ -82,19 +82,21 @@ int main() {
     static_assert(std::string_view(shift<"foobar", 3>()) == "bar"); // OK
 
     // Passing an array marked as `constexpr`
-    constexpr int arr1[] = { 1, 8, 9, 20 };
+    constexpr int arr1[] { 1, 8, 9, 20 };
     print_array<arr1>();                                            // 1 8 9 20
 
     // Passing an array of static storage duration
-    static int arr2[] = {1, 2, 4, 8};
+    static int arr2[] { 1, 2, 4, 8 };
     print_array<arr2>();                                            // 1 2 4 8
+    static constexpr int arr3[] { 1, 6, 10, 23 };
+    print_array<arr3>();                                            // 1 6 10 23
 
     // Passing an `std::array` object
     print_array<std::array { 1, 4, 6, 9 }>();                       // 1 4 6 9
 }
 ```
 
-You can also use it with parameter packs, obviously: [<kbd>Demo</kbd>](https://godbolt.org/z/v1McfhGdf)
+You can also use it with parameter packs, obviously: [<kbd>Demo</kbd>](https://godbolt.org/z/1drPaGTxM)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -104,7 +106,7 @@ using namespace uninttp;
 
 template <uni_auto ...Values>
 void print() {
-    ((std::cout << Values << " "), ...) << '\n';
+    ((std::cout << Values << ' '), ...) << '\n';
 }
 
 int main() {
@@ -131,7 +133,7 @@ int main() {
 }
 ```
 
-> **Note**: One can also use the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/oYWGoxb81)
+> **Note**: One can also use the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/n8M1zzzEq)
 > 
 > ```cpp
 > #include <uninttp/uni_auto.hpp>
@@ -143,12 +145,12 @@ int main() {
 > template <uni_auto Value>
 > requires std::same_as<uni_auto_simplify_t<Value>, const char*>
 > void do_something() {
->     std::cout << "A string was passed" << '\n';
+>     std::cout << "A string was passed\n";
 > }
 > template <uni_auto Value>
 > requires std::same_as<uni_auto_simplify_t<Value>, int>
 > void do_something() {
->     std::cout << "An integer was passed" << '\n';
+>     std::cout << "An integer was passed\n";
 > }
 > 
 > int main() {
@@ -386,15 +388,24 @@ The test suite can be found [here](https://godbolt.org/z/146W8ssj8).
         fun<1.89>();
     }
     ```
-2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/7PeT74cbK)
+2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/W3jhKeGTv)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
+    #include <iostream>
+    #include <cstddef>
 
     using namespace uninttp;
 
+    template <typename T, std::size_t N>
+    void print_array(T(&arr)[N]) {
+        for (auto elem : arr)
+            std::cout << elem << ' ';
+        std::cout << '\n';
+    }
+
     template <uni_auto X>
-    void fun() {
+    void fun1() {
         // The conversion operator doesn't get invoked in this case:
         // constexpr auto a = X;
         
@@ -407,13 +418,23 @@ The test suite can be found [here](https://godbolt.org/z/146W8ssj8).
         // Using `uni_auto_simplify_v`:
         constexpr auto d = uni_auto_simplify_v<X>;
 
-        static_assert(std::is_same_v<decltype(b), const int>); // OK
-        static_assert(std::is_same_v<decltype(c), const int>); // OK
-        static_assert(std::is_same_v<decltype(d), const int>); // OK
+        // static_assert(std::is_same_v<decltype(a), const int>); // Error
+        static_assert(std::is_same_v<decltype(b), const int>);    // OK
+        static_assert(std::is_same_v<decltype(c), const int>);    // OK
+        static_assert(std::is_same_v<decltype(d), const int>);    // OK
+    }
+
+    template <uni_auto X>
+    void fun2() {
+        // print_array(X);          // Error! `X`'s conversion operator is not invoked during the call!
+        print_array(uni_auto_v<X>); // OK
     }
 
     int main() {
-        fun<42>();
+        fun1<42>();
+
+        constexpr int arr[] { 1, 2, 3 };
+        fun2<arr>(); // 1 2 3
     }
     ```
 3)  This is more or less an extension to restriction (2).
@@ -438,17 +459,17 @@ The test suite can be found [here](https://godbolt.org/z/146W8ssj8).
         // Assignment operator works as expected
         X = 2;
 
-        // auto a = X.p;                // This will NOT work since the C++ Standard does not allow
-                                        // overloading the dot operator (yet)
+        // auto a = X.p;        // This will NOT work since the C++ Standard does not allow
+                                // overloading the dot operator (yet)
 
         // Extract the value out of `X` beforehand and store it in another reference which can now be used to access the member `p`:
         auto&& ref = uni_auto_v<X>;
         const auto b = ref.p;
-        std::cout << b << '\n';         // 2
+        std::cout << b << '\n'; // 2
 
         // Or, if you want to access the member `p` directly, you would have to call `uni_auto_v` explicitly:
         const auto c = uni_auto_v<X>.p;
-        std::cout << c << '\n';         // 2
+        std::cout << c << '\n'; // 2
     }
 
     int main() {

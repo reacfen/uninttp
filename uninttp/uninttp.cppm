@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v3.0
+ * Version: v3.1
  *
  * Copyright (c) 2021-23 reacfen
  *
@@ -523,7 +523,7 @@ export namespace uninttp {
         requires (!std::is_const_v<T>)
     uni_auto(T&) -> uni_auto<T&>;
     template <typename T>
-        requires (!std::is_pointer_v<T> || std::is_function_v<std::remove_pointer_t<T>>)
+        requires ((std::is_trivial_v<T> && !std::is_pointer_v<T>) || std::is_function_v<std::remove_pointer_t<T>>)
     uni_auto(const T&) -> uni_auto<const T>;
     template <typename T>
         requires (std::is_pointer_v<T> && !std::is_function_v<std::remove_pointer_t<T>>)
