@@ -40,7 +40,7 @@ int main() {
 
 And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc. through it: [<kbd>Demo</kbd>](https://godbolt.org/z/YWbKo5ff9)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc. through it: [<kbd>Demo</kbd>](https://godbolt.org/z/snEb49o9E)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -61,19 +61,19 @@ void print_array() {
     // Using a range-based `for`-loop
     for (auto elem : Array)
         std::cout << elem << ' ';
-    
+
     std::cout << '\n';
 
     // Using iterators
     for (auto it = std::begin(Array); it != std::end(Array); ++it)
         std::cout << *it << ' ';
-    
+
     std::cout << '\n';
 
     // Using an index-based `for`-loop
     for (std::size_t i = 0; i < std::size(Array); i++)
         std::cout << Array[i] << ' ';
-    
+
     std::cout << '\n';
 }
 
@@ -324,7 +324,7 @@ All the examples shown above have used function templates to demonstrate the cap
 
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 
-The test suite can be found [here](https://godbolt.org/z/146W8ssj8).
+The test suite can be found [here](https://godbolt.org/z/81GrTaPz8).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
@@ -388,7 +388,7 @@ The test suite can be found [here](https://godbolt.org/z/146W8ssj8).
         fun<1.89>();
     }
     ```
-2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/W3jhKeGTv)
+2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/Grdxenacd)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -408,7 +408,7 @@ The test suite can be found [here](https://godbolt.org/z/146W8ssj8).
     void fun1() {
         // The conversion operator doesn't get invoked in this case:
         // constexpr auto a = X;
-        
+
         // Using an explicit conversion statement:
         constexpr int b = X;
 
@@ -480,4 +480,4 @@ The test suite can be found [here](https://godbolt.org/z/146W8ssj8).
 
 ## Playground:
 
-If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/q5Weqf9vM) you go!
+If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/j6fqoszYq) you go!

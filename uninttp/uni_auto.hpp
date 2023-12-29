@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v3.1
+ * Version: v3.2
  *
  * Copyright (c) 2021-23 reacfen
  *
@@ -54,7 +54,7 @@ namespace uninttp {
         using type = T(&)[N];
         type value;
 
-        constexpr uni_auto(type v) noexcept(std::is_nothrow_constructible_v<type, type&>) : value{v} {}
+        constexpr uni_auto(type v) noexcept(std::is_nothrow_constructible_v<type, type&>) : value{ v } {}
 
         constexpr operator type() const noexcept {
             return value;
@@ -63,7 +63,7 @@ namespace uninttp {
         static constexpr auto size() noexcept {
             return N;
         }
-        
+
         constexpr auto swap(const uni_auto& other) const noexcept(noexcept(std::swap(value, other.value))) {
             std::swap(value, other.value);
         }
@@ -119,9 +119,9 @@ namespace uninttp {
         std::remove_reference_t<type> value;
 
         template <std::size_t ...Indices>
-        constexpr uni_auto(type v, std::index_sequence<Indices...>) noexcept(std::is_nothrow_constructible_v<T, T&>) : value{v[Indices]...} {}
+        constexpr uni_auto(type v, std::index_sequence<Indices...>) noexcept(std::is_nothrow_constructible_v<T, T&>) : value{ v[Indices]... } {}
 
-        constexpr uni_auto(type v) noexcept(noexcept(uni_auto{v, std::make_index_sequence<N>()})) : uni_auto{v, std::make_index_sequence<N>()} {}
+        constexpr uni_auto(type v) noexcept(noexcept(uni_auto{ v, std::make_index_sequence<N>() })) : uni_auto{ v, std::make_index_sequence<N>() } {}
 
         constexpr operator type() const noexcept {
             return value;
@@ -130,7 +130,7 @@ namespace uninttp {
         static constexpr auto size() noexcept {
             return N;
         }
-        
+
         constexpr auto data() const noexcept {
             return std::data(value);
         }
@@ -177,12 +177,11 @@ namespace uninttp {
     };
 
     template <typename T>
-        requires (!std::is_class_v<T>)
     struct uni_auto<T&> {
         using type = T&;
         type value;
 
-        constexpr uni_auto(type v) noexcept : value{v} {}
+        constexpr uni_auto(type v) noexcept : value{ v } {}
 
         constexpr operator type() const noexcept {
             return value;
@@ -210,7 +209,7 @@ namespace uninttp {
         using type = T&;
         type value;
 
-        constexpr uni_auto(type v) noexcept(std::is_nothrow_constructible_v<T, T&>) : value{v} {}
+        constexpr uni_auto(type v) noexcept(std::is_nothrow_constructible_v<T, T&>) : value{ v } {}
 
         constexpr operator type() const noexcept(std::is_nothrow_constructible_v<T, T&>) {
             return value;
@@ -477,12 +476,12 @@ namespace uninttp {
     };
 
     template <typename T>
-        requires (!std::is_lvalue_reference_v<T> && !std::is_class_v<T>)
+        requires (!std::is_class_v<T>)
     struct uni_auto<T> {
         using type = std::conditional_t<std::is_function_v<T>, T*, T>;
         type value;
 
-        constexpr uni_auto(type v) noexcept : value{v} {}
+        constexpr uni_auto(type v) noexcept : value{ v } {}
 
         constexpr operator type() const noexcept {
             return value;
@@ -494,11 +493,11 @@ namespace uninttp {
     };
 
     template <typename T>
-        requires (!std::is_lvalue_reference_v<T> && std::is_class_v<T>)
+        requires std::is_class_v<T>
     struct uni_auto<T> : T {
         using type = T;
 
-        constexpr uni_auto(type v) noexcept(std::is_nothrow_constructible_v<type, type&>) : type{v} {}
+        constexpr uni_auto(type v) noexcept(std::is_nothrow_constructible_v<type, type&>) : type{ v } {}
 
         constexpr operator type() const noexcept(std::is_nothrow_constructible_v<type, type&>) {
             return *this;
@@ -514,7 +513,7 @@ namespace uninttp {
             return this;
         }
     };
-    
+
     /* Deals with C-style arrays and fixed-size C-Strings */
     template <typename T, std::size_t N>
     uni_auto(T(&)[N]) -> uni_auto<T[N]>;
@@ -524,10 +523,17 @@ namespace uninttp {
         requires (!std::is_const_v<T>)
     uni_auto(T&) -> uni_auto<T&>;
     template <typename T>
-        requires ((std::is_trivial_v<T> && !std::is_pointer_v<T>) || std::is_function_v<std::remove_pointer_t<T>>)
+        requires (!(
+            std::is_same_v<std::remove_pointer_t<T>, const char>          ||
+            std::is_same_v<std::remove_pointer_t<T>, const signed char>   ||
+            std::is_same_v<std::remove_pointer_t<T>, const unsigned char> ||
+            std::is_same_v<std::remove_pointer_t<T>, const wchar_t>       ||
+            std::is_same_v<std::remove_pointer_t<T>, const char8_t>       ||
+            std::is_same_v<std::remove_pointer_t<T>, const char16_t>      ||
+            std::is_same_v<std::remove_pointer_t<T>, const char32_t>
+        ) && std::is_trivial_v<T> && (std::is_scalar_v<std::remove_pointer_t<T>> || std::is_class_v<std::remove_pointer_t<T>> || std::is_function_v<std::remove_pointer_t<T>>))
     uni_auto(const T&) -> uni_auto<const T>;
     template <typename T>
-        requires (std::is_pointer_v<T> && !std::is_function_v<std::remove_pointer_t<T>>)
     uni_auto(const T&) -> uni_auto<const T&>;
     template <typename T>
     uni_auto(T&&) -> uni_auto<T>;
