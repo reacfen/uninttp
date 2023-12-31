@@ -114,7 +114,7 @@ int main() {
 }
 ```
 
-You can also enforce a type by adding a constraint: [<kbd>Demo</kbd>](https://godbolt.org/z/daxs6YGsK)
+You can also enforce a type by adding a constraint: [<kbd>Demo</kbd>](https://godbolt.org/z/M55an6zGP)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -123,8 +123,8 @@ You can also enforce a type by adding a constraint: [<kbd>Demo</kbd>](https://go
 using namespace uninttp;
 
 template <uni_auto Value>
-// `uni_auto_simplify_t<Value>` gives you the simplified type for type-checking convenience
-requires std::same_as<uni_auto_simplify_t<Value>, const char*>
+    // `uni_auto_simplify_t<Value>` gives you the simplified type for type-checking convenience
+    requires std::same_as<uni_auto_simplify_t<Value>, const char*>
 void only_accepts_strings() {}
 
 int main() {
@@ -133,7 +133,7 @@ int main() {
 }
 ```
 
-> **Note**: One can also use the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/n8M1zzzEq)
+> **Note**: One can also use the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/P5TWE6dro)
 > 
 > ```cpp
 > #include <uninttp/uni_auto.hpp>
@@ -143,12 +143,12 @@ int main() {
 > using namespace uninttp;
 > 
 > template <uni_auto Value>
-> requires std::same_as<uni_auto_simplify_t<Value>, const char*>
+>     requires std::same_as<uni_auto_simplify_t<Value>, const char*>
 > void do_something() {
 >     std::cout << "A string was passed\n";
 > }
 > template <uni_auto Value>
-> requires std::same_as<uni_auto_simplify_t<Value>, int>
+>     requires std::same_as<uni_auto_simplify_t<Value>, int>
 > void do_something() {
 >     std::cout << "An integer was passed\n";
 > }
@@ -209,7 +209,7 @@ int main() {
 }
 ```
 
-Example using pointers to objects: [<kbd>Demo</kbd>](https://godbolt.org/z/56bodexzM)
+Example using pointers to objects: [<kbd>Demo</kbd>](https://godbolt.org/z/E5Yo3z5qq)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -218,21 +218,21 @@ Example using pointers to objects: [<kbd>Demo</kbd>](https://godbolt.org/z/56bod
 using namespace uninttp;
 
 template <uni_auto P>
-void mutate_pointer() {
+void modify_pointer_value() {
     *P = 42;
 }
 
 template <uni_auto P>
-void print_pointer() {
+void print_pointer_value() {
     std::cout << *P << '\n';
 }
 
 int main() {
     static constexpr int x = 2;
     static int y = 3;
-    print_pointer<&x>();  // 2
-    mutate_pointer<&y>(); // Modifies the value of `y` indirectly through pointer access
-    print_pointer<&y>();  // 42
+    print_pointer_value<&x>();  // 2
+    modify_pointer_value<&y>(); // Modifies the value of `y` indirectly through pointer access
+    print_pointer_value<&y>();  // 42
 }
 ```
 
@@ -258,7 +258,7 @@ int main() {
 }
 ```
 
-Example using pointers to members: [<kbd>Demo</kbd>](https://godbolt.org/z/MzKzz1Pd3)
+Example using pointers to members: [<kbd>Demo</kbd>](https://godbolt.org/z/1T8oMfWMY)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -275,6 +275,7 @@ struct some_class {
 
 template <uni_auto MemFn>
 void call_member_fn(const some_class& x, int& y) {
+    // `uni_auto_v` is used to extract the underlying value out of a `uni_auto` object
     (x.*uni_auto_v<MemFn>)(y);
 }
 
@@ -324,7 +325,7 @@ All the examples shown above have used function templates to demonstrate the cap
 
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 
-The test suite can be found [here](https://godbolt.org/z/3KGjM8h6W).
+The test suite can be found [here](https://godbolt.org/z/4PEKdcc1d).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
@@ -344,7 +345,7 @@ The test suite can be found [here](https://godbolt.org/z/3KGjM8h6W).
         </tr>
         <tr>
             <td><code>uninttp::uni_auto_simplify_t&lt;uni_auto Value&gt;</code></td>
-            <td><p>Gives the simplified type of the underlying value held by <code>Value</code>.</p><p>If <code>Value</code> holds an array, it condenses it into a pointer and returns the pointer as the type. It also removes any lvalue or rvalue references (if any) from the type returned.</p><p>This feature is often useful for doing compile-time type-checking, SFINAE and/or for defining certain constraints on the types held by <code>Value</code>.</p></td>
+            <td><p>Gives the simplified type of the underlying value held by <code>Value</code>.</p><p>If <code>Value</code> holds an array, it condenses it into a pointer and returns the pointer as the type. It also removes any lvalue or rvalue references from the type returned.</p><p>This feature is often useful for doing compile-time type-checking, SFINAE and/or for defining certain constraints on the types held by <code>Value</code>.</p></td>
         </tr>
         <tr>
             <td><code>uninttp::uni_auto_v&lt;uni_auto Value&gt;</code></td>
@@ -352,16 +353,16 @@ The test suite can be found [here](https://godbolt.org/z/3KGjM8h6W).
         </tr>
         <tr>
             <td><code>uninttp::uni_auto_simplify_v&lt;uni_auto Value&gt;</code></td>
-            <td><p>Converts the underlying value of <code>Value</code> into its simplest form.</p><p>If <code>Value</code> holds an array, it converts it into a pointer and also casts away any lvalue and rvalue references (if any).</p></td>
+            <td><p>Converts the underlying value of <code>Value</code> into its simplest form.</p><p>If <code>Value</code> holds an array, it converts it into a pointer and also casts away any lvalue and rvalue references.</p></td>
         </tr>
         <tr>
             <td><code>uninttp::promote_to_ref&lt;auto&amp;&amp; Value&gt;</code></td>
-            <td><p>Pre-constructs a <code>uni_auto</code> object after binding the value to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/vTE7n3T11">Here</a> you can find a live example to see this feature in action.</p></td>
+            <td><p>Pre-constructs a <code>uni_auto</code> object after binding the value to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/a8eYWWf47">Here</a> you can find a live example to see this feature in action.</p></td>
         </tr>
     </tbody>
 </table>
 
-## Restrictions:
+## Limitations:
 
 1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t` or `uni_auto_simplify_t` to fetch the type: [<kbd>Demo</kbd>](https://godbolt.org/z/n355orPcs)
     ```cpp
