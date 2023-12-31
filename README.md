@@ -354,6 +354,10 @@ The test suite can be found [here](https://godbolt.org/z/81GrTaPz8).
             <td><code>uninttp::uni_auto_simplify_v&lt;uni_auto Value&gt;</code></td>
             <td><p>Converts the underlying value of <code>Value</code> into its simplest form.</p><p>If <code>Value</code> holds an array, it converts it into a pointer and also casts away any lvalue and rvalue references (if any).</p></td>
         </tr>
+        <tr>
+            <td><code>uninttp::promote_to_ref&lt;auto&amp;&amp; Value&gt;</code></td>
+            <td><p>Pre-constructs a <code>uni_auto</code> object after binding the value to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/G8EqEoqW1">Here</a> you can find a live example to see this feature in action.</p></td>
+        </tr>
     </tbody>
 </table>
 

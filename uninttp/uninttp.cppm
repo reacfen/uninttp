@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v3.2
+ * Version: v3.3
  *
  * Copyright (c) 2021-23 reacfen
  *
@@ -530,7 +530,7 @@ export namespace uninttp {
             std::is_same_v<std::remove_pointer_t<T>, const char8_t>       ||
             std::is_same_v<std::remove_pointer_t<T>, const char16_t>      ||
             std::is_same_v<std::remove_pointer_t<T>, const char32_t>
-        ) && std::is_trivial_v<T> && (std::is_scalar_v<std::remove_pointer_t<T>> || std::is_class_v<std::remove_pointer_t<T>> || std::is_function_v<std::remove_pointer_t<T>>))
+        ) && !std::is_volatile_v<T> && std::is_trivial_v<T> && (std::is_scalar_v<std::remove_pointer_t<T>> || std::is_class_v<std::remove_pointer_t<T>> || std::is_function_v<std::remove_pointer_t<T>>))
     uni_auto(const T&) -> uni_auto<const T>;
     template <typename T>
     uni_auto(const T&) -> uni_auto<const T&>;
@@ -750,6 +750,13 @@ export namespace uninttp {
      */
     template <uni_auto Value>
     using uni_auto_simplify_t = std::remove_const_t<decltype(uni_auto_simplify_v<Value>)>;
+
+    /**
+     * @brief Pre-constructs a `uni_auto` object after binding the value to a reference.
+     * @tparam Value The value that the reference will bind to
+     */
+    template <auto&& Value>
+    constexpr uni_auto<decltype(Value)> promote_to_ref = Value;
 }
 
 export namespace std {
