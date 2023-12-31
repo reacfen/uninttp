@@ -324,7 +324,7 @@ All the examples shown above have used function templates to demonstrate the cap
 
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 
-The test suite can be found [here](https://godbolt.org/z/81GrTaPz8).
+The test suite can be found [here](https://godbolt.org/z/3KGjM8h6W).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
@@ -356,7 +356,7 @@ The test suite can be found [here](https://godbolt.org/z/81GrTaPz8).
         </tr>
         <tr>
             <td><code>uninttp::promote_to_ref&lt;auto&amp;&amp; Value&gt;</code></td>
-            <td><p>Pre-constructs a <code>uni_auto</code> object after binding the value to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/G8EqEoqW1">Here</a> you can find a live example to see this feature in action.</p></td>
+            <td><p>Pre-constructs a <code>uni_auto</code> object after binding the value to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/vTE7n3T11">Here</a> you can find a live example to see this feature in action.</p></td>
         </tr>
     </tbody>
 </table>
@@ -484,4 +484,4 @@ The test suite can be found [here](https://godbolt.org/z/81GrTaPz8).
 
 ## Playground:
 
-If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/j6fqoszYq) you go!
+If you'd like to play around with `uni_auto` yourself, [here](https://godbolt.org/z/eKz8GsMrb) you go!

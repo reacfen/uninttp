@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v3.3
+ * Version: v3.4
  *
  * Copyright (c) 2021-23 reacfen
  *
@@ -36,6 +36,7 @@
 #ifndef UNINTTP_UNI_AUTO_HPP
 #define UNINTTP_UNI_AUTO_HPP
 
+#include <string_view>
 #include <type_traits>
 #include <iterator>
 #include <cstddef>
@@ -43,6 +44,14 @@
 #include <array>
 
 namespace uninttp {
+    namespace detail {
+        template <typename T>
+        struct is_string_view : std::false_type {};
+
+        template <typename CharT, typename Traits>
+        struct is_string_view<std::basic_string_view<CharT, Traits>> : std::true_type {};
+    }
+
     /**
      * @brief The `uni_auto` class type implementation
      */
@@ -497,7 +506,7 @@ namespace uninttp {
     struct uni_auto<T> : T {
         using type = T;
 
-        constexpr uni_auto(type v) noexcept(std::is_nothrow_constructible_v<type, type&>) : type{ v } {}
+        constexpr uni_auto(const type& v) noexcept(std::is_nothrow_constructible_v<type, type&>) : type{ v } {}
 
         constexpr operator type() const noexcept(std::is_nothrow_constructible_v<type, type&>) {
             return *this;
@@ -531,7 +540,7 @@ namespace uninttp {
             std::is_same_v<std::remove_pointer_t<T>, const char8_t>       ||
             std::is_same_v<std::remove_pointer_t<T>, const char16_t>      ||
             std::is_same_v<std::remove_pointer_t<T>, const char32_t>
-        ) && !std::is_volatile_v<T> && std::is_trivial_v<T> && (std::is_scalar_v<std::remove_pointer_t<T>> || std::is_class_v<std::remove_pointer_t<T>> || std::is_function_v<std::remove_pointer_t<T>>))
+        ) && !std::is_volatile_v<T> && !detail::is_string_view<T>::value && std::is_trivially_copyable_v<T> && (std::is_scalar_v<std::remove_pointer_t<T>> || std::is_class_v<std::remove_pointer_t<T>> || std::is_function_v<std::remove_pointer_t<T>>))
     uni_auto(const T&) -> uni_auto<const T>;
     template <typename T>
     uni_auto(const T&) -> uni_auto<const T&>;
@@ -777,8 +786,8 @@ namespace std {
         std::swap(a, b.value);
     }
     template <typename T>
-    constexpr auto to_array(const uninttp::uni_auto<T>& c) noexcept(noexcept(std::to_array(c.value))) {
-        return std::to_array(c.value);
+    constexpr auto to_array(const uninttp::uni_auto<T>& a) noexcept(noexcept(std::to_array(a.value))) {
+        return std::to_array(a.value);
     }
 }
 
