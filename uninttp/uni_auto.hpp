@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v3.4
+ * Version: v3.5
  *
  * Copyright (c) 2021-23 reacfen
  *
@@ -35,6 +35,10 @@
 
 #ifndef UNINTTP_UNI_AUTO_HPP
 #define UNINTTP_UNI_AUTO_HPP
+
+# if __cplusplus < 202002L
+#     error "uninttp can only be used in C++20 or later."
+# endif
 
 #include <string_view>
 #include <type_traits>
@@ -767,26 +771,27 @@ namespace uninttp {
      */
     template <auto&& Value>
     constexpr uni_auto<decltype(Value)> promote_to_ref = Value;
-}
 
-namespace std {
     template <typename T>
-        requires (!std::is_const_v<T>)
-    constexpr auto swap(const uninttp::uni_auto<T>& a, const uninttp::uni_auto<T>& b) noexcept(noexcept(std::swap(a.value, b.value))) {
-        std::swap(a.value, b.value);
+    constexpr auto swap(const uni_auto<T>& a, const uni_auto<T>& b) noexcept {
+        using std::swap;
+        swap(static_cast<typename uni_auto<T>::type>(a), static_cast<typename uni_auto<T>::type>(b));
     }
+
     template <typename T1, typename T2>
-        requires (!std::is_const_v<T1>)
-    constexpr auto swap(const uninttp::uni_auto<T1>& a, T2& b) noexcept(noexcept(std::swap(a.value, b))) {
-        std::swap(a.value, b);
+    constexpr auto swap(const uni_auto<T1>& a, T2& b) noexcept {
+        using std::swap;
+        swap(static_cast<typename uni_auto<T1>::type>(a), b);
     }
+
     template <typename T1, typename T2>
-        requires (!std::is_const_v<T2>)
-    constexpr auto swap(T1& a, const uninttp::uni_auto<T2>& b) noexcept(noexcept(std::swap(a, b.value))) {
-        std::swap(a, b.value);
+    constexpr auto swap(T1& a, const uni_auto<T2>& b) noexcept {
+        using std::swap;
+        swap(a, static_cast<typename uni_auto<T2>::type>(b));
     }
+
     template <typename T>
-    constexpr auto to_array(const uninttp::uni_auto<T>& a) noexcept(noexcept(std::to_array(a.value))) {
+    constexpr auto to_array(const uni_auto<T>& a) noexcept {
         return std::to_array(a.value);
     }
 }

@@ -5,9 +5,9 @@ A universal type for non-type template parameters for C++20 or later.
 
 ## Installation:
 
-uninttp (***Uni***versal ***N***on-***T***ype ***T***emplate ***P***arameters) is a header-only library. Just simply clone this repository and you are ready to go.
+uninttp (***Uni***versal ***N***on-***T***ype ***T***emplate ***P***arameters) is a header-only library. Just simply clone this repository and you're ready to go.
 
-Once that is done, you can simply include the necessary header(s) and start using uninttp in your project:
+Once that's done, you can include the necessary header(s) and start using uninttp in your project:
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -38,7 +38,7 @@ int main() {
 }
 ```
 
-And if you thought "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
+And if you thought, "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
 However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc. through it: [<kbd>Demo</kbd>](https://godbolt.org/z/snEb49o9E)
 
@@ -298,24 +298,56 @@ int main() {
 }
 ```
 
-Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/T6d9qT7x5)
+Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/M3nd43rKq)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <iostream>
+#include <utility>
 
 using namespace uninttp;
 
-template <uni_auto X>
-void fun() {
-    X = 49;
+struct X {
+    int n;
+
+    constexpr X(int n) : n(n) {}
+    constexpr X(X const&) = delete;
+    constexpr X& operator = (X const&) = delete;
+
+    friend void swap(X& a, X& b) noexcept {
+        std::cout << "`swap(X&, X&)` was called.\n";
+        std::swap(a.n, b.n);
+    }
+};
+
+template <uni_auto X, uni_auto Y>
+void swap_vars() {
+    swap(X, Y); // Find the appropriate `swap()` using ADL
 }
 
 int main() {
-    static int x = 42;
-    std::cout << x << '\n'; // 42
-    fun<x>();
-    std::cout << x << '\n'; // 49
+    {
+        static int a = 42,
+                   b = 69;
+
+        static X x { a },
+                 y { b };
+
+        std::cout << x.n << ' ' << y.n << '\n'; // 42 69
+        swap_vars<x, y>();                      // `swap(X&, X&)` was called.
+        std::cout << x.n << ' ' << y.n << '\n'; // 69 42
+    }
+
+    /////////////////////////////////////////
+
+    {
+        static int x = 86,
+                   y = 420;
+
+        std::cout << x << ' ' << y << '\n';     // 86 420
+        swap_vars<x, y>();                      // Swaps the values of `x` and `y`
+        std::cout << x << ' ' << y << '\n';     // 420 86
+    }
 }
 ```
 
