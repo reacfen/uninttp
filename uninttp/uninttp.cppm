@@ -10,9 +10,9 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v3.5
+ * Version: v3.6
  *
- * Copyright (c) 2021-23 reacfen
+ * Copyright (c) 2021-24 reacfen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -530,13 +530,13 @@ export namespace uninttp {
     uni_auto(T&) -> uni_auto<T&>;
     template <typename T>
         requires (!(
-            std::is_same_v<std::remove_pointer_t<T>, const char>          ||
-            std::is_same_v<std::remove_pointer_t<T>, const signed char>   ||
-            std::is_same_v<std::remove_pointer_t<T>, const unsigned char> ||
-            std::is_same_v<std::remove_pointer_t<T>, const wchar_t>       ||
-            std::is_same_v<std::remove_pointer_t<T>, const char8_t>       ||
-            std::is_same_v<std::remove_pointer_t<T>, const char16_t>      ||
-            std::is_same_v<std::remove_pointer_t<T>, const char32_t>
+            std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const char>          ||
+            std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const signed char>   ||
+            std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const unsigned char> ||
+            std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const wchar_t>       ||
+            std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const char8_t>       ||
+            std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const char16_t>      ||
+            std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const char32_t>
         ) && !std::is_volatile_v<T> && !is_string_view<T>::value && std::is_trivially_copyable_v<T> && (std::is_scalar_v<std::remove_pointer_t<T>> || std::is_class_v<std::remove_pointer_t<T>> || std::is_function_v<std::remove_pointer_t<T>>))
     uni_auto(const T&) -> uni_auto<const T>;
     template <typename T>

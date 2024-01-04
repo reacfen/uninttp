@@ -5,7 +5,7 @@ A universal type for non-type template parameters for C++20 or later.
 
 ## Installation:
 
-uninttp (***Uni***versal ***N***on-***T***ype ***T***emplate ***P***arameters) is a header-only library. Just simply clone this repository and you're ready to go.
+uninttp (***Uni***versal ***N***on-***T***ype ***T***emplate ***P***arameters) is a header-only library. Simply clone this repository and you're ready to go.
 
 Once that's done, you can include the necessary header(s) and start using uninttp in your project:
 
@@ -40,7 +40,7 @@ int main() {
 
 And if you thought, "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc. through it: [<kbd>Demo</kbd>](https://godbolt.org/z/snEb49o9E)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc. through it: [<kbd>Demo</kbd>](https://godbolt.org/z/868Gxfn7a)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -59,7 +59,7 @@ constexpr auto shift() {
 template <uni_auto Array>
 void print_array() {
     // Using a range-based `for`-loop
-    for (auto elem : Array)
+    for (const auto& elem : Array)
         std::cout << elem << ' ';
 
     std::cout << '\n';
@@ -258,7 +258,7 @@ int main() {
 }
 ```
 
-Example using pointers to members: [<kbd>Demo</kbd>](https://godbolt.org/z/1T8oMfWMY)
+Example using pointers to members: [<kbd>Demo</kbd>](https://godbolt.org/z/e7oY8EGhs)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -268,15 +268,15 @@ using namespace uninttp;
 
 struct some_class {
     int some_member_var = 0;
-    void some_member_fn(int& p) const {
+    void some_member_fun(int& p) const {
         p = 2;
     }
 };
 
-template <uni_auto MemFn>
-void call_member_fn(const some_class& x, int& y) {
+template <uni_auto MemFun>
+void call_member_fun(const some_class& x, int& y) {
     // `uni_auto_v` is used to extract the underlying value out of a `uni_auto` object
-    (x.*uni_auto_v<MemFn>)(y);
+    (x.*uni_auto_v<MemFun>)(y);
 }
 
 template <uni_auto MemVar>
@@ -289,7 +289,7 @@ int main() {
     int y;
 
     // Calling a member function
-    call_member_fn<&some_class::some_member_fn>(x, y);
+    call_member_fun<&some_class::some_member_fun>(x, y);
     std::cout << y << '\n';                 // 2
 
     // Modifying a member variable
@@ -298,7 +298,7 @@ int main() {
 }
 ```
 
-Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/M3nd43rKq)
+Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/MGvrG9qTb)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -311,8 +311,9 @@ struct X {
     int n;
 
     constexpr X(int n) : n(n) {}
-    constexpr X(X const&) = delete;
-    constexpr X& operator = (X const&) = delete;
+
+    constexpr X(const X&) = delete;
+    constexpr X& operator=(const X&) = delete;
 
     friend void swap(X& a, X& b) noexcept {
         std::cout << "`swap(X&, X&)` was called.\n";
@@ -357,7 +358,7 @@ All the examples shown above have used function templates to demonstrate the cap
 
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 
-The test suite can be found [here](https://godbolt.org/z/4PEKdcc1d).
+The test suite can be found [here](https://godbolt.org/z/3bb4x7b5s).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
@@ -425,7 +426,7 @@ The test suite can be found [here](https://godbolt.org/z/4PEKdcc1d).
         fun<1.89>();
     }
     ```
-2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/Grdxenacd)
+2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/aG54jfYeq)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -433,13 +434,6 @@ The test suite can be found [here](https://godbolt.org/z/4PEKdcc1d).
     #include <cstddef>
 
     using namespace uninttp;
-
-    template <typename T, std::size_t N>
-    void print_array(T(&arr)[N]) {
-        for (auto elem : arr)
-            std::cout << elem << ' ';
-        std::cout << '\n';
-    }
 
     template <uni_auto X>
     void fun1() {
@@ -459,6 +453,15 @@ The test suite can be found [here](https://godbolt.org/z/4PEKdcc1d).
         static_assert(std::is_same_v<decltype(b), const int>);    // OK
         static_assert(std::is_same_v<decltype(c), const int>);    // OK
         static_assert(std::is_same_v<decltype(d), const int>);    // OK
+    }
+
+    /////////////////////////////////////////
+
+    template <typename T, std::size_t N>
+    void print_array(T(&arr)[N]) {
+        for (const auto& elem : arr)
+            std::cout << elem << ' ';
+        std::cout << '\n';
     }
 
     template <uni_auto X>
