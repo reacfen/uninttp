@@ -1,16 +1,16 @@
 /*
- *               _       _   _         
- *              (_)     | | | |        
- *   _   _ _ __  _ _ __ | |_| |_ _ __  
- *  | | | | '_ \| | '_ \| __| __| '_ \ 
+ *               _       _   _
+ *              (_)     | | | |
+ *   _   _ _ __  _ _ __ | |_| |_ _ __
+ *  | | | | '_ \| | '_ \| __| __| '_ \
  *  | |_| | | | | | | | | |_| |_| |_) |
- *   \__,_|_| |_|_|_| |_|\__|\__| .__/ 
- *                              | |    
- *                              |_|    
+ *   \__,_|_| |_|_|_| |_|\__|\__| .__/
+ *                              | |
+ *                              |_|
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v3.6
+ * Version: v3.7
  *
  * Copyright (c) 2021-24 reacfen
  *
@@ -48,19 +48,42 @@
 #include <array>
 
 namespace uninttp {
+    /**
+     * @brief The `uni_auto` class type implementation
+     */
+    template <typename T>
+    struct uni_auto;
+
     namespace detail {
         template <typename T>
         struct is_string_view : std::false_type {};
 
         template <typename CharT, typename Traits>
         struct is_string_view<std::basic_string_view<CharT, Traits>> : std::true_type {};
-    }
 
-    /**
-     * @brief The `uni_auto` class type implementation
-     */
-    template <typename T>
-    struct uni_auto;
+        template <typename T>
+        struct is_uni_auto : std::false_type {};
+
+        template <typename T>
+        struct is_uni_auto<uni_auto<T>> : std::true_type {};
+
+        template <auto& Value>
+        struct promote_to_ref_impl {
+            static constexpr uni_auto<decltype(Value)> value = Value;
+        };
+
+        template <auto& Value>
+            requires is_uni_auto<std::remove_cvref_t<decltype(Value)>>::value && requires { Value.value; }
+        struct promote_to_ref_impl<Value> {
+            static constexpr uni_auto<decltype(Value.value)&> value = static_cast<decltype(Value.value)&>(Value);
+        };
+
+        template <auto& Value>
+            requires is_uni_auto<std::remove_cvref_t<decltype(Value)>>::value && std::is_class_v<typename std::remove_cvref_t<decltype(Value)>::type>
+        struct promote_to_ref_impl<Value> {
+            static constexpr uni_auto<typename std::remove_cvref_t<decltype(Value)>::type&> value = static_cast<typename std::remove_cvref_t<decltype(Value)>::type&>(Value);
+        };
+    }
 
     template <typename T, std::size_t N>
     struct uni_auto<T[N]> {
@@ -742,7 +765,7 @@ namespace uninttp {
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
-    using uni_auto_t = typename decltype(Value)::type;
+    using uni_auto_t = std::remove_const_t<typename decltype(Value)::type>;
 
     /**
      * @brief Fetches the actual value held by whatever `uni_auto` object is passed to it.
@@ -766,11 +789,11 @@ namespace uninttp {
     using uni_auto_simplify_t = std::remove_const_t<decltype(uni_auto_simplify_v<Value>)>;
 
     /**
-     * @brief Pre-constructs a `uni_auto` object after binding the value to a reference.
+     * @brief Pre-constructs a `uni_auto` object after binding an lvalue to a reference.
      * @tparam Value The value that the reference will bind to
      */
-    template <auto&& Value>
-    constexpr uni_auto<decltype(Value)> promote_to_ref = Value;
+    template <auto& Value>
+    constexpr auto promote_to_ref = detail::promote_to_ref_impl<Value>::value;
 
     template <typename T>
     constexpr auto swap(const uni_auto<T>& a, const uni_auto<T>& b) noexcept {
@@ -791,6 +814,7 @@ namespace uninttp {
     }
 
     template <typename T>
+        requires std::is_array_v<T>
     constexpr auto to_array(const uni_auto<T>& a) noexcept {
         return std::to_array(a.value);
     }

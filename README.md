@@ -40,7 +40,7 @@ int main() {
 
 And if you thought, "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc. through it: [<kbd>Demo</kbd>](https://godbolt.org/z/868Gxfn7a)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc., through it: [<kbd>Demo</kbd>](https://godbolt.org/z/868Gxfn7a)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -133,7 +133,7 @@ int main() {
 }
 ```
 
-> **Note**: One can also use the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/P5TWE6dro)
+> **Note**: One can also use the above combination of constraints and `uni_auto` to achieve a sort of "*function overloading through template parameters*" mechanism: [<kbd>Demo</kbd>](https://godbolt.org/z/YxMnqc699)
 > 
 > ```cpp
 > #include <uninttp/uni_auto.hpp>
@@ -147,6 +147,7 @@ int main() {
 > void do_something() {
 >     std::cout << "A string was passed\n";
 > }
+> 
 > template <uni_auto Value>
 >     requires std::same_as<uni_auto_simplify_t<Value>, int>
 > void do_something() {
@@ -298,7 +299,7 @@ int main() {
 }
 ```
 
-Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/MGvrG9qTb)
+Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/bdeMsf5xx)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -308,12 +309,7 @@ Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/MGvrG9q
 using namespace uninttp;
 
 struct X {
-    int n;
-
-    constexpr X(int n) : n(n) {}
-
-    constexpr X(const X&) = delete;
-    constexpr X& operator=(const X&) = delete;
+    int n{};
 
     friend void swap(X& a, X& b) noexcept {
         std::cout << "`swap(X&, X&)` was called.\n";
@@ -323,27 +319,26 @@ struct X {
 
 template <uni_auto X, uni_auto Y>
 void swap_vars() {
-    swap(X, Y); // Find the appropriate `swap()` using ADL
+    using std::swap;
+    swap(X, Y); // Finds the appropriate `swap()` using ADL
+    // Alternatively: `swap(uni_auto_v<X>, uni_auto_v<Y>);`
 }
 
 int main() {
     {
-        static int a = 42,
-                   b = 69;
+        static int x = 42, y = 69;
 
-        static X x { a },
-                 y { b };
+        static X a{ x }, b{ y };
 
-        std::cout << x.n << ' ' << y.n << '\n'; // 42 69
-        swap_vars<x, y>();                      // `swap(X&, X&)` was called.
-        std::cout << x.n << ' ' << y.n << '\n'; // 69 42
+        std::cout << a.n << ' ' << b.n << '\n'; // 42 69
+        swap_vars<a, b>();                      // `swap(X&, X&)` was called.
+        std::cout << a.n << ' ' << b.n << '\n'; // 69 42
     }
 
     /////////////////////////////////////////
 
     {
-        static int x = 86,
-                   y = 420;
+        static int x = 86, y = 420;
 
         std::cout << x << ' ' << y << '\n';     // 86 420
         swap_vars<x, y>();                      // Swaps the values of `x` and `y`
@@ -358,7 +353,7 @@ All the examples shown above have used function templates to demonstrate the cap
 
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 
-The test suite can be found [here](https://godbolt.org/z/3bb4x7b5s).
+The test suite can be found [here](https://godbolt.org/z/45hdbbYzq).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
@@ -389,8 +384,8 @@ The test suite can be found [here](https://godbolt.org/z/3bb4x7b5s).
             <td><p>Converts the underlying value of <code>Value</code> into its simplest form.</p><p>If <code>Value</code> holds an array, it converts it into a pointer and also casts away any lvalue and rvalue references.</p></td>
         </tr>
         <tr>
-            <td><code>uninttp::promote_to_ref&lt;auto&amp;&amp; Value&gt;</code></td>
-            <td><p>Pre-constructs a <code>uni_auto</code> object after binding the value to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/a8eYWWf47">Here</a> you can find a live example to see this feature in action.</p></td>
+            <td><code>uninttp::promote_to_ref&lt;auto&amp; Value&gt;</code></td>
+            <td><p>Pre-constructs a <code>uni_auto</code> object after binding an lvalue to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/a8eYWWf47">Here</a> you can find a live example to see this feature in action.</p></td>
         </tr>
     </tbody>
 </table>
@@ -426,7 +421,7 @@ The test suite can be found [here](https://godbolt.org/z/3bb4x7b5s).
         fun<1.89>();
     }
     ```
-2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/aG54jfYeq)
+2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/nqnfvaKq3)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -461,6 +456,7 @@ The test suite can be found [here](https://godbolt.org/z/3bb4x7b5s).
     void print_array(T(&arr)[N]) {
         for (const auto& elem : arr)
             std::cout << elem << ' ';
+
         std::cout << '\n';
     }
 
@@ -479,7 +475,7 @@ The test suite can be found [here](https://godbolt.org/z/3bb4x7b5s).
     ```
 3)  This is more or less an extension to restriction (2).
 
-    Accessing members through lvalue references of class types with `uni_auto` is a little tricky as the dot operator does not work as expected. Instead, one would have to first use `uni_auto_v` to extract the underlying lvalue reference manually and then proceed to access the members of the class as usual: [<kbd>Demo</kbd>](https://godbolt.org/z/TbfvasnEE)
+    Accessing members through lvalue references of class types with `uni_auto` is a little tricky as the dot operator doesn't work as expected. Instead, one would have to first use `uni_auto_v` to extract the underlying lvalue reference manually and then proceed to access the members of the class as usual: [<kbd>Demo</kbd>](https://godbolt.org/z/TbfvasnEE)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <iostream>
