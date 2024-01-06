@@ -33,41 +33,36 @@
  * SOFTWARE.
  */
 
-#ifndef UNINTTP_UNI_AUTO_HPP
-#define UNINTTP_UNI_AUTO_HPP
+export module uninttp.uni_auto;
 
-#if __cplusplus < 202002L
-#    error "uninttp can only be used with C++20 or later."
-#endif
+import <string_view>;
+import <type_traits>;
+import <iterator>;
+import <cstddef>;
+import <utility>;
+import <array>;
 
-#include <string_view>
-#include <type_traits>
-#include <iterator>
-#include <cstddef>
-#include <utility>
-#include <array>
-
-namespace uninttp {
+export namespace uninttp {
     /**
      * @brief The `uni_auto` class type implementation
      */
     template <typename T>
     struct uni_auto;
+}
 
-    namespace detail::uninttp_internals {
-        template <typename T>
-        struct is_string_view : std::false_type {};
+template <typename T>
+struct is_string_view : std::false_type {};
 
-        template <typename CharT, typename Traits>
-        struct is_string_view<std::basic_string_view<CharT, Traits>> : std::true_type {};
+template <typename CharT, typename Traits>
+struct is_string_view<std::basic_string_view<CharT, Traits>> : std::true_type {};
 
-        template <typename T>
-        struct is_uni_auto : std::false_type {};
+template <typename T>
+struct is_uni_auto : std::false_type {};
 
-        template <typename T>
-        struct is_uni_auto<uni_auto<T>> : std::true_type {};
-    }
+template <typename T>
+struct is_uni_auto<uninttp::uni_auto<T>> : std::true_type {};
 
+export namespace uninttp {
     template <typename T, std::size_t N>
     struct uni_auto<T[N]> final {
         using type = T(&)[N];
@@ -296,7 +291,7 @@ namespace uninttp {
             std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const char8_t>       ||
             std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const char16_t>      ||
             std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const char32_t>
-        ) && !std::is_volatile_v<T> && !detail::uninttp_internals::is_string_view<T>::value && std::is_trivially_copyable_v<T> && (std::is_scalar_v<std::remove_pointer_t<T>> || std::is_class_v<std::remove_pointer_t<T>> || std::is_function_v<std::remove_pointer_t<T>>))
+        ) && !std::is_volatile_v<T> && !is_string_view<T>::value && std::is_trivially_copyable_v<T> && (std::is_scalar_v<std::remove_pointer_t<T>> || std::is_class_v<std::remove_pointer_t<T>> || std::is_function_v<std::remove_pointer_t<T>>))
     uni_auto(const T&) -> uni_auto<const T>;
     template <typename T>
     uni_auto(const T&) -> uni_auto<const T&>;
@@ -575,434 +570,434 @@ namespace uninttp {
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator+=(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) += b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) += b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) += b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator-=(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) -= b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) -= b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) -= b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator*=(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) *= b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) *= b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) *= b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator/=(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) /= b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) /= b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) /= b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator%=(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) %= b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) %= b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) %= b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator&=(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) &= b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) &= b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) &= b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator|=(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) |= b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) |= b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) |= b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator^=(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) ^= b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) ^= b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) ^= b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator<<=(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) <<= b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) <<= b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) <<= b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator>>=(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) >>= b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) >>= b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) >>= b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator+(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) + b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) + b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) + b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator-(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) - b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) - b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) - b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator*(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) * b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) * b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) * b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator/(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) / b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) / b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) / b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator%(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) % b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) % b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) % b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator&(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) & b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) & b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) & b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator|(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) | b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) | b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) | b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator^(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) ^ b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) ^ b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) ^ b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator<<(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) << b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) << b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) << b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator>>(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) >> b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) >> b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) >> b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator&&(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) && b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) && b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) && b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator||(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) || b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) || b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) || b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator==(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) == b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) == b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) == b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator!=(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) != b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) != b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) != b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator<(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) < b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) < b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) < b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator>(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) > b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) > b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) > b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator<=(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) <= b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) <= b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) <= b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator>=(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) >= b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) >= b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) >= b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator<=>(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) <=> b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) <=> b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) <=> b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator->*(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) ->* b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) ->* b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) ->* b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<T>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator,(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a), b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a), b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a), b.operator typename uni_auto<U>::type();
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator+=(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() += std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() += std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() += std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator-=(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() -= std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() -= std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() -= std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator*=(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() *= std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() *= std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() *= std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator/=(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() /= std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() /= std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() /= std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator%=(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() %= std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() %= std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() %= std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator&=(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() &= std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() &= std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() &= std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator|=(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() |= std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() |= std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() |= std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator^=(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() ^= std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() ^= std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() ^= std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator<<=(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() <<= std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() <<= std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() <<= std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator>>=(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() >>= std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() >>= std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() >>= std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator+(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() + std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() + std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() + std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator-(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() - std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() - std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() - std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator*(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() * std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() * std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() * std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator/(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() / std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() / std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() / std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator%(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() % std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() % std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() % std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator&(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() & std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() & std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() & std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator|(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() | std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() | std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() | std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator^(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() ^ std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() ^ std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() ^ std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator<<(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() << std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() << std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() << std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator>>(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() >> std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() >> std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() >> std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator&&(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() && std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() && std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() && std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator||(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() || std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() || std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() || std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator==(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() == std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() == std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() == std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator!=(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() != std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() != std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() != std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator<(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() < std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() < std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() < std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator>(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() > std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() > std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() > std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator<=(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() <= std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() <= std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() <= std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator>=(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() >= std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() >= std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() >= std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator<=>(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() <=> std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() <=> std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() <=> std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator->*(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() ->* std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() ->* std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() ->* std::forward<U>(b);
     }
 
     template <typename T, typename U>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<U>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
     constexpr decltype(auto) operator,(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type(), std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type(), std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type(), std::forward<U>(b);
@@ -1041,7 +1036,7 @@ namespace uninttp {
      * @tparam Value The value that the reference will bind to
      */
     template <auto& Value>
-        requires (!detail::uninttp_internals::is_uni_auto<std::remove_cvref_t<decltype(Value)>>::value)
+        requires (!is_uni_auto<std::remove_cvref_t<decltype(Value)>>::value)
     constexpr uni_auto<decltype(Value)> promote_to_ref = Value;
 
     template <typename T>
@@ -1068,5 +1063,3 @@ namespace uninttp {
         return std::to_array(a.value);
     }
 }
-
-#endif /* UNINTTP_UNI_AUTO_HPP */

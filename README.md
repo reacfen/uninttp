@@ -237,11 +237,10 @@ int main() {
 }
 ```
 
-Example using function pointers: [<kbd>Demo</kbd>](https://godbolt.org/z/3hTojnere)
+Example using function pointers: [<kbd>Demo</kbd>](https://godbolt.org/z/Kq86TjsWx)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
-#include <iostream>
 
 using namespace uninttp;
 
@@ -255,7 +254,8 @@ constexpr auto call_fun() {
 }
 
 int main() {
-    static_assert(call_fun<some_fun>() == 42); // OK
+    static_assert(call_fun<some_fun>() == 42);  // OK
+    static_assert(call_fun<&some_fun>() == 42); // OK
 }
 ```
 
@@ -353,7 +353,7 @@ All the examples shown above have used function templates to demonstrate the cap
 
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 
-The test suite can be found [here](https://godbolt.org/z/45hdbbYzq).
+The test suite can be found [here](https://godbolt.org/z/zaE3n43Mq).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
@@ -475,7 +475,7 @@ The test suite can be found [here](https://godbolt.org/z/45hdbbYzq).
     ```
 3)  This is more or less an extension to restriction (2).
 
-    Accessing members through lvalue references of class types with `uni_auto` is a little tricky as the dot operator doesn't work as expected. Instead, one would have to first use `uni_auto_v` to extract the underlying lvalue reference manually and then proceed to access the members of the class as usual: [<kbd>Demo</kbd>](https://godbolt.org/z/TbfvasnEE)
+    Accessing members through lvalue references of class types with `uni_auto` is a little tricky as the dot operator doesn't work as expected. Instead, one would have to first use `uni_auto_v` to extract the underlying lvalue reference manually and then proceed to access the members of the class as usual: [<kbd>Demo</kbd>](https://godbolt.org/z/3o7qdYhhd)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <iostream>
@@ -495,17 +495,17 @@ The test suite can be found [here](https://godbolt.org/z/45hdbbYzq).
         // Assignment operator works as expected
         X = 2;
 
-        // auto a = X.p;        // This will NOT work since the C++ Standard does not allow
-                                // overloading the dot operator (yet)
+        // const auto a = X.p;     // This will NOT work since the C++ Standard does not allow
+        // std::cout << a << '\n'; // overloading the dot operator (yet)
 
         // Extract the value out of `X` beforehand and store it in another reference which can now be used to access the member `p`:
         auto&& ref = uni_auto_v<X>;
         const auto b = ref.p;
-        std::cout << b << '\n'; // 2
+        std::cout << b << '\n';    // 2
 
-        // Or, if you want to access the member `p` directly, you would have to call `uni_auto_v` explicitly:
+        // Or if you want to access the member `p` directly, you would have to call `uni_auto_v` explicitly:
         const auto c = uni_auto_v<X>.p;
-        std::cout << c << '\n'; // 2
+        std::cout << c << '\n';    // 2
     }
 
     int main() {
