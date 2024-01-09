@@ -237,7 +237,7 @@ int main() {
 }
 ```
 
-Example using function pointers: [<kbd>Demo</kbd>](https://godbolt.org/z/Kq86TjsWx)
+Example using function pointers: [<kbd>Demo</kbd>](https://godbolt.org/z/qb37n1bhq)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -254,7 +254,9 @@ constexpr auto call_fun() {
 }
 
 int main() {
+    // Passing `some_fun` by reference
     static_assert(call_fun<some_fun>() == 42);  // OK
+    // Passing `some_fun` as a function pointer
     static_assert(call_fun<&some_fun>() == 42); // OK
 }
 ```
@@ -373,7 +375,7 @@ The test suite can be found [here](https://godbolt.org/z/zaE3n43Mq).
         </tr>
         <tr>
             <td><code>uninttp::uni_auto_simplify_t&lt;uni_auto Value&gt;</code></td>
-            <td><p>Gives the simplified type of the underlying value held by <code>Value</code>.</p><p>If <code>Value</code> holds an array, it condenses it into a pointer and returns the pointer as the type. It also removes any lvalue or rvalue references from the type returned.</p><p>This feature is often useful for doing compile-time type-checking, SFINAE and/or for defining certain constraints on the types held by <code>Value</code>.</p></td>
+            <td><p>Gives the simplified type of the underlying value held by <code>Value</code>.</p><p>If <code>Value</code> holds an array or a reference to a function, it condenses it into a pointer and returns the pointer as the type. It also removes any references from the type returned.</p><p>This feature is often useful for doing compile-time type-checking, SFINAE and/or for defining certain constraints on the types held by <code>Value</code>.</p></td>
         </tr>
         <tr>
             <td><code>uninttp::uni_auto_v&lt;uni_auto Value&gt;</code></td>
@@ -381,7 +383,7 @@ The test suite can be found [here](https://godbolt.org/z/zaE3n43Mq).
         </tr>
         <tr>
             <td><code>uninttp::uni_auto_simplify_v&lt;uni_auto Value&gt;</code></td>
-            <td><p>Converts the underlying value of <code>Value</code> into its simplest form.</p><p>If <code>Value</code> holds an array, it converts it into a pointer and also casts away any lvalue and rvalue references.</p></td>
+            <td><p>Converts the underlying value of <code>Value</code> into its simplest form.</p><p>If <code>Value</code> holds an array or a reference to a function, it converts it into a pointer and also casts away any and all references.</p></td>
         </tr>
         <tr>
             <td><code>uninttp::promote_to_ref&lt;auto&amp; Value&gt;</code></td>

@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v3.8
+ * Version: v3.9
  *
  * Copyright (c) 2021-24 reacfen
  *
@@ -121,10 +121,6 @@ export namespace uninttp {
         constexpr auto crend() const noexcept {
             return std::crend(value);
         }
-
-        constexpr decltype(auto) operator&() const noexcept {
-            return &value;
-        }
     };
 
     template <typename T, std::size_t N>
@@ -184,10 +180,6 @@ export namespace uninttp {
         constexpr auto crend() const noexcept {
             return std::crend(value);
         }
-
-        constexpr decltype(auto) operator&() const noexcept {
-            return &value;
-        }
     };
 
     template <typename T>
@@ -211,11 +203,6 @@ export namespace uninttp {
         constexpr decltype(auto) operator[](Args&&... args) const noexcept(noexcept(value.operator[](std::forward<Args>(args)...)))
             requires requires { value.operator[](std::forward<Args>(args)...); } {
             return value.operator[](std::forward<Args>(args)...);
-        }
-
-        constexpr decltype(auto) operator&() const noexcept(noexcept(&value))
-            requires requires { &value; } {
-            return &value;
         }
 
         constexpr decltype(auto) operator->() const noexcept(noexcept(value.operator->()))
@@ -242,10 +229,6 @@ export namespace uninttp {
             return value;
         }
 
-        constexpr decltype(auto) operator&() const noexcept {
-            return &value;
-        }
-
         constexpr decltype(auto) operator->() const noexcept
             requires std::is_pointer_v<type> {
             return value;
@@ -259,18 +242,8 @@ export namespace uninttp {
 
         constexpr uni_auto(const type& v) noexcept(std::is_nothrow_constructible_v<type, type&>) : type{ v } {}
 
-        constexpr operator type() const noexcept(std::is_nothrow_constructible_v<type, type&>) {
+        constexpr operator const type&() const noexcept {
             return *this;
-        }
-
-        constexpr decltype(auto) operator&() const noexcept(noexcept(T::operator&()))
-            requires requires { T::operator&(); } {
-            return T::operator&();
-        }
-
-        constexpr decltype(auto) operator&() const noexcept
-            requires (!requires { T::operator&(); }) {
-            return this;
         }
     };
 
@@ -350,6 +323,18 @@ export namespace uninttp {
     constexpr decltype(auto) operator*(const uni_auto<T>& a) noexcept(noexcept(*a.operator typename uni_auto<T>::type()))
         requires requires { *a.operator typename uni_auto<T>::type(); } {
         return *a.operator typename uni_auto<T>::type();
+    }
+
+    template <typename T>
+        requires (!std::is_class_v<T>)
+    constexpr decltype(auto) operator&(const uni_auto<T>& a) noexcept(noexcept(&a.operator typename uni_auto<T>::type())) {
+        return &a.operator typename uni_auto<T>::type();
+    }
+
+    template <typename T>
+        requires std::is_class_v<T>
+    constexpr decltype(auto) operator&(const uni_auto<T>& a) noexcept {
+        return &a.operator const typename uni_auto<T>::type&();
     }
 
     template <typename T, typename U>
@@ -1004,28 +989,28 @@ export namespace uninttp {
     }
 
     /**
-     * @brief Fetches the type held by whatever `uni_auto` object is passed to it.
+     * @brief Fetches the type of the underlying value held by the `uni_auto` object passed to it.
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
     using uni_auto_t = std::remove_const_t<typename decltype(Value)::type>;
 
     /**
-     * @brief Fetches the actual value held by whatever `uni_auto` object is passed to it.
+     * @brief Fetches the underlying value held by the `uni_auto` object passed to it.
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
     constexpr uni_auto_t<Value> uni_auto_v = Value;
 
     /**
-     * @brief Similar to `uni_auto_t` but converts array types to pointers and removes any lvalue and rvalue references.
+     * @brief Similar to `uni_auto_t` but converts array types and function types to pointers and removes any references from the type returned.
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
     using uni_auto_simplify_t = std::remove_const_t<std::decay_t<uni_auto_t<Value>>>;
 
     /**
-     * @brief Similar to `uni_auto_v` but reduces array types to pointers and casts away lvalue and rvalue references.
+     * @brief Similar to `uni_auto_v` but reduces array types and function types to pointers and casts away any and all references.
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
