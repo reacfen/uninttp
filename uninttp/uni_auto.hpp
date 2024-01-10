@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v3.9
+ * Version: v3.9.1
  *
  * Copyright (c) 2021-24 reacfen
  *
@@ -331,7 +331,6 @@ namespace uninttp {
     }
 
     template <typename T>
-        requires (!std::is_class_v<T>)
     constexpr decltype(auto) operator&(const uni_auto<T>& a) noexcept(noexcept(&a.operator typename uni_auto<T>::type())) {
         return &a.operator typename uni_auto<T>::type();
     }
