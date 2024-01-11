@@ -301,7 +301,7 @@ int main() {
 }
 ```
 
-Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/bdeMsf5xx)
+Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/qjxMoEYrq)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -313,28 +313,26 @@ using namespace uninttp;
 struct X {
     int n{};
 
-    friend void swap(X& a, X& b) noexcept {
+    friend void swap(X& a, X& b) {
         std::cout << "`swap(X&, X&)` was called.\n";
         std::swap(a.n, b.n);
     }
 };
 
-template <uni_auto X, uni_auto Y>
+template <uni_auto A, uni_auto B>
 void swap_vars() {
     using std::swap;
-    swap(X, Y); // Finds the appropriate `swap()` using ADL
-    // Alternatively: `swap(uni_auto_v<X>, uni_auto_v<Y>);`
+    swap(A, B); // Finds the appropriate `swap()` using ADL
+    // Alternatively: `swap(uni_auto_v<A>, uni_auto_v<B>);`
 }
 
 int main() {
     {
-        static int x = 42, y = 69;
+        static X x{ 42 }, y{ 69 };
 
-        static X a{ x }, b{ y };
-
-        std::cout << a.n << ' ' << b.n << '\n'; // 42 69
-        swap_vars<a, b>();                      // `swap(X&, X&)` was called.
-        std::cout << a.n << ' ' << b.n << '\n'; // 69 42
+        std::cout << x.n << ' ' << y.n << '\n'; // 42 69
+        swap_vars<x, y>();                      // `swap(X&, X&)` was called.
+        std::cout << x.n << ' ' << y.n << '\n'; // 69 42
     }
 
     /////////////////////////////////////////
@@ -355,7 +353,7 @@ All the examples shown above have used function templates to demonstrate the cap
 
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 
-The test suite can be found [here](https://godbolt.org/z/zaE3n43Mq).
+The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
