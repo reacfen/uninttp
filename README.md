@@ -301,7 +301,7 @@ int main() {
 }
 ```
 
-Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/qjxMoEYrq)
+Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/vq1excd77)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -311,11 +311,15 @@ Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/qjxMoEY
 using namespace uninttp;
 
 struct X {
-    int n{};
+    int n = 0;
 
     friend void swap(X& a, X& b) {
         std::cout << "`swap(X&, X&)` was called.\n";
         std::swap(a.n, b.n);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const X& x) {
+        return os << x.n;
     }
 };
 
@@ -330,9 +334,9 @@ int main() {
     {
         static X x{ 42 }, y{ 69 };
 
-        std::cout << x.n << ' ' << y.n << '\n'; // 42 69
+        std::cout << x << ' ' << y << '\n';     // 42 69
         swap_vars<x, y>();                      // `swap(X&, X&)` was called.
-        std::cout << x.n << ' ' << y.n << '\n'; // 69 42
+        std::cout << x << ' ' << y << '\n';     // 69 42
     }
 
     /////////////////////////////////////////
