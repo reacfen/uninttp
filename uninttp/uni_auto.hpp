@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v3.9.3
+ * Version: v3.9.4
  *
  * Copyright (c) 2021-24 reacfen
  *
@@ -1047,7 +1047,7 @@ namespace uninttp {
     }
 
     template <typename T>
-        requires std::is_array_v<T>
+        requires std::is_array_v<std::remove_reference_t<T>>
     constexpr auto to_array(const uni_auto<T>& a) noexcept {
         return std::to_array(a.value);
     }

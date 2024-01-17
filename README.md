@@ -389,14 +389,14 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         </tr>
         <tr>
             <td><code>uninttp::promote_to_ref&lt;auto&amp; Value&gt;</code></td>
-            <td><p>Pre-constructs a <code>uni_auto</code> object after binding an lvalue to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/a8eYWWf47">Here</a> you can find a live example to see this feature in action.</p></td>
+            <td><p>Pre-constructs a <code>uni_auto</code> object after binding an lvalue to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/P3shn8WMb">Here</a> you can find a live example to see this feature in action.</p></td>
         </tr>
     </tbody>
 </table>
 
 ## Limitations:
 
-1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t` or `uni_auto_simplify_t` to fetch the type: [<kbd>Demo</kbd>](https://godbolt.org/z/81bocPqh3)
+1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t` or `uni_auto_simplify_t` to fetch the type: [<kbd>Demo</kbd>](https://godbolt.org/z/b7KE9vv6f)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -421,7 +421,7 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         static_assert(std::is_same_v<uni_auto_simplify_t<X>, double>);                    // OK
 
         /* Using `uni_auto_simplify_v` and then using `decltype()` and then removing the
-         * const specifier from the type returned: */
+         * `const` specifier from the type returned: */
         static_assert(
             std::is_same_v<std::remove_const_t<decltype(uni_auto_simplify_v<X>)>, double>
         );                                                                                // OK
