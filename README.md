@@ -301,7 +301,7 @@ int main() {
 }
 ```
 
-Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/vq1excd77)
+Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/dej63jPj8)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -326,7 +326,7 @@ struct X {
 template <uni_auto A, uni_auto B>
 void swap_vars() {
     using std::swap;
-    swap(A, B); // Finds the appropriate `swap()` using ADL
+    swap(A, B); // `uninttp::swap()` finds the appropriate `swap()` using ADL
     // Alternatively: `swap(uni_auto_v<A>, uni_auto_v<B>);`
 }
 
@@ -396,7 +396,7 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
 
 ## Limitations:
 
-1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t` or `uni_auto_simplify_t` to fetch the type: [<kbd>Demo</kbd>](https://godbolt.org/z/b7KE9vv6f)
+1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t` or `uni_auto_simplify_t` to fetch the type: [<kbd>Demo</kbd>](https://godbolt.org/z/KzT3Msner)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -411,8 +411,8 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         // Using `uni_auto_t`:
         static_assert(std::is_same_v<uni_auto_t<X>, double>);                             // OK
 
-        /* Using `uni_auto_v` and then using `decltype()` and then removing the const
-         * specifier from the type returned: */
+        /* Using `uni_auto_v` and then using `decltype()` and then removing the
+         * `const` specifier from the type returned: */
         static_assert(
             std::is_same_v<std::remove_const_t<decltype(uni_auto_v<X>)>, double>
         );                                                                                // OK
