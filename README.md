@@ -301,7 +301,7 @@ int main() {
 }
 ```
 
-Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/dej63jPj8)
+Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/EbY65jfnY)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -314,7 +314,7 @@ struct X {
     int n = 0;
 
     friend void swap(X& a, X& b) {
-        std::cout << "`swap(X&, X&)` was called.\n";
+        std::cout << "`swap(X&, X&)` was called\n";
         std::swap(a.n, b.n);
     }
 
@@ -335,7 +335,7 @@ int main() {
         static X x{ 42 }, y{ 69 };
 
         std::cout << x << ' ' << y << '\n';     // 42 69
-        swap_vars<x, y>();                      // `swap(X&, X&)` was called.
+        swap_vars<x, y>();                      // `swap(X&, X&)` was called
         std::cout << x << ' ' << y << '\n';     // 69 42
     }
 
@@ -389,7 +389,7 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         </tr>
         <tr>
             <td><code>uninttp::promote_to_ref&lt;auto&amp; Value&gt;</code></td>
-            <td><p>Pre-constructs a <code>uni_auto</code> object after binding an lvalue to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/P3shn8WMb">Here</a> you can find a live example to see this feature in action.</p></td>
+            <td><p>Pre-constructs a <code>uni_auto</code> object after binding an lvalue to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/jKsGrTvzr">Here</a> you can find a live example to see this feature in action.</p></td>
         </tr>
     </tbody>
 </table>

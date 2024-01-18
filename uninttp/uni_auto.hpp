@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v3.9.6
+ * Version: v3.9.7
  *
  * Copyright (c) 2021-24 reacfen
  *
@@ -37,7 +37,7 @@
 #define UNINTTP_UNI_AUTO_HPP
 
 #if __cplusplus < 202002L
-#    error "uninttp can only be used with C++20 or later."
+    #error uninttp can only be used with C++20 or later.
 #endif
 
 #include <string_view>
