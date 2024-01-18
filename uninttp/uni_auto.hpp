@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v3.9.8
+ * Version: v3.9.9
  *
  * Copyright (c) 2021-24 reacfen
  *
@@ -67,66 +67,6 @@ namespace uninttp {
         template <typename T>
         struct is_uni_auto<uni_auto<T>> : std::true_type {};
     }
-
-    template <typename T, std::size_t N>
-    struct uni_auto<T[N]> final {
-        using type = T(&)[N];
-        type value;
-
-        constexpr uni_auto(type v) noexcept : value{ v } {}
-
-        constexpr operator type() const noexcept {
-            return value;
-        }
-
-        static constexpr auto size() noexcept {
-            return N;
-        }
-
-        constexpr auto swap(const uni_auto& other) const noexcept {
-            std::swap(value, other.value);
-        }
-
-        constexpr auto data() const noexcept {
-            return std::data(value);
-        }
-
-        constexpr auto empty() const noexcept {
-            return std::empty(value);
-        }
-
-        constexpr auto begin() const noexcept {
-            return std::begin(value);
-        }
-
-        constexpr auto end() const noexcept {
-            return std::end(value);
-        }
-
-        constexpr auto cbegin() const noexcept {
-            return std::cbegin(value);
-        }
-
-        constexpr auto cend() const noexcept {
-            return std::cend(value);
-        }
-
-        constexpr auto rbegin() const noexcept {
-            return std::rbegin(value);
-        }
-
-        constexpr auto rend() const noexcept {
-            return std::rend(value);
-        }
-
-        constexpr auto crbegin() const noexcept {
-            return std::crbegin(value);
-        }
-
-        constexpr auto crend() const noexcept {
-            return std::crend(value);
-        }
-    };
 
     template <typename T, std::size_t N>
     struct uni_auto<const T[N]> final {
@@ -198,6 +138,66 @@ namespace uninttp {
             return value;
         }
 
+        static constexpr auto size() noexcept
+            requires std::is_array_v<T> {
+            return std::extent_v<T>;
+        }
+
+        constexpr auto swap(const uni_auto& other) const noexcept
+            requires std::is_array_v<T> {
+            std::swap(value, other.value);
+        }
+
+        constexpr auto data() const noexcept
+            requires std::is_array_v<T> {
+            return std::data(value);
+        }
+
+        constexpr auto empty() const noexcept
+            requires std::is_array_v<T> {
+            return std::empty(value);
+        }
+
+        constexpr auto begin() const noexcept
+            requires std::is_array_v<T> {
+            return std::begin(value);
+        }
+
+        constexpr auto end() const noexcept
+            requires std::is_array_v<T> {
+            return std::end(value);
+        }
+
+        constexpr auto cbegin() const noexcept
+            requires std::is_array_v<T> {
+            return std::cbegin(value);
+        }
+
+        constexpr auto cend() const noexcept
+            requires std::is_array_v<T> {
+            return std::cend(value);
+        }
+
+        constexpr auto rbegin() const noexcept
+            requires std::is_array_v<T> {
+            return std::rbegin(value);
+        }
+
+        constexpr auto rend() const noexcept
+            requires std::is_array_v<T> {
+            return std::rend(value);
+        }
+
+        constexpr auto crbegin() const noexcept
+            requires std::is_array_v<T> {
+            return std::crbegin(value);
+        }
+
+        constexpr auto crend() const noexcept
+            requires std::is_array_v<T> {
+            return std::crend(value);
+        }
+
         template <typename U>
         constexpr decltype(auto) operator=(U&& b) const noexcept(noexcept(value = std::forward<U>(b)))
             requires requires { value = std::forward<U>(b); } {
@@ -252,11 +252,13 @@ namespace uninttp {
         }
     };
 
-    /* Deals with C-style arrays and fixed-size C-Strings */
+    /* Deals with `constexpr`-marked built-in arrays and fixed-size C-Strings/string literals */
     template <typename T, std::size_t N>
-    uni_auto(T(&)[N]) -> uni_auto<T[N]>;
+    uni_auto(const T(&)[N]) -> uni_auto<const T[N]>;
 
-    /* Deals with lvalue references, function pointers, integral and enumeration types, pointers to objects, pointers to member functions and objects, nullptr, etc. (Basically everything else) */
+    /* Deals with built-in arrays, lvalue references, function pointers, integral and enumeration types, pointers to objects, pointers to member functions and objects, nullptr, etc. (Basically everything else) */
+    template <typename T>
+    uni_auto(T&&) -> uni_auto<T>;
     template <typename T>
         requires (!std::is_const_v<T>)
     uni_auto(T&) -> uni_auto<T&>;
@@ -273,8 +275,6 @@ namespace uninttp {
     uni_auto(const T&) -> uni_auto<const T>;
     template <typename T>
     uni_auto(const T&) -> uni_auto<const T&>;
-    template <typename T>
-    uni_auto(T&&) -> uni_auto<T>;
 
     template <typename T>
     constexpr decltype(auto) operator++(const uni_auto<T>& a) noexcept(noexcept(++a.operator typename uni_auto<T>::type()))

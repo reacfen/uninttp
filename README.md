@@ -40,7 +40,7 @@ int main() {
 
 And if you thought, "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc., through it: [<kbd>Demo</kbd>](https://godbolt.org/z/868Gxfn7a)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc., through it: [<kbd>Demo</kbd>](https://godbolt.org/z/Gv6Tv7v13)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -88,8 +88,10 @@ int main() {
     // Passing an array of static storage duration
     static int arr2[] { 1, 2, 4, 8 };
     print_array<arr2>();                                            // 1 2 4 8
-    static constexpr int arr3[] { 1, 6, 10, 23 };
-    print_array<arr3>();                                            // 1 6 10 23
+    static const int arr3[] { 1, 2, 8, 9 };
+    print_array<promote_to_ref<arr3>>();                            // 1 2 8 9
+    static constexpr int arr4[] { 1, 6, 10, 23 };
+    print_array<arr4>();                                            // 1 6 10 23
 
     // Passing an `std::array` object
     print_array<std::array { 1, 4, 6, 9 }>();                       // 1 4 6 9
@@ -301,10 +303,11 @@ int main() {
 }
 ```
 
-Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/EbY65jfnY)
+Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/hGPqaYch9)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
+#include <concepts>
 #include <iostream>
 #include <utility>
 
@@ -315,7 +318,7 @@ struct X {
 
     friend void swap(X& a, X& b) {
         std::cout << "`swap(X&, X&)` was called\n";
-        std::swap(a.n, b.n);
+        std::ranges::swap(a.n, b.n);
     }
 
     friend std::ostream& operator<<(std::ostream& os, const X& x) {
@@ -325,9 +328,8 @@ struct X {
 
 template <uni_auto A, uni_auto B>
 void swap_vars() {
-    using std::swap;
-    swap(A, B); // `uninttp::swap()` finds the appropriate `swap()` using ADL
-    // Alternatively: `swap(uni_auto_v<A>, uni_auto_v<B>);`
+    std::ranges::swap(A, B);
+    // Alternatively: `uninttp::swap(A, B);`
 }
 
 int main() {
