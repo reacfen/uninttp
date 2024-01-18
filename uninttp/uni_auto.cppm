@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v3.9.7
+ * Version: v3.9.8
  *
  * Copyright (c) 2021-24 reacfen
  *
@@ -988,14 +988,14 @@ export namespace uninttp {
     }
 
     /**
-     * @brief Fetches the type of the underlying value held by the `uni_auto` object passed to it.
+     * @brief Fetches the type of the underlying value held by a `uni_auto` object.
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
     using uni_auto_t = std::remove_const_t<typename decltype(Value)::type>;
 
     /**
-     * @brief Fetches the underlying value held by the `uni_auto` object passed to it.
+     * @brief Fetches the underlying value held by a `uni_auto` object.
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
@@ -1006,7 +1006,7 @@ export namespace uninttp {
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
-    using uni_auto_simplify_t = std::remove_const_t<std::decay_t<uni_auto_t<Value>>>;
+    using uni_auto_simplify_t = std::decay_t<typename decltype(Value)::type>;
 
     /**
      * @brief Similar to `uni_auto_v` but reduces array types and function types to pointers and casts away any and all references.
@@ -1023,24 +1023,36 @@ export namespace uninttp {
         requires (!is_uni_auto<std::remove_cvref_t<decltype(Value)>>::value)
     constexpr uni_auto<decltype(Value)> promote_to_ref = Value;
 
+    /**
+     * @brief Exchanges the values held by `a` and `b`.
+     */
     template <typename T>
     constexpr auto swap(const uni_auto<T>& a, const uni_auto<T>& b) noexcept {
         using std::swap;
         swap(a.operator typename uni_auto<T>::type(), b.operator typename uni_auto<T>::type());
     }
 
+    /**
+     * @brief Exchanges the values held by `a` and `b`.
+     */
     template <typename T1, typename T2>
     constexpr auto swap(const uni_auto<T1>& a, T2& b) noexcept {
         using std::swap;
         swap(a.operator typename uni_auto<T1>::type(), b);
     }
 
+    /**
+     * @brief Exchanges the values held by `a` and `b`.
+     */
     template <typename T1, typename T2>
     constexpr auto swap(T1& a, const uni_auto<T2>& b) noexcept {
         using std::swap;
         swap(a, b.operator typename uni_auto<T2>::type());
     }
 
+    /**
+     * @brief Creates an `std::array` object using `a`.
+     */
     template <typename T>
         requires std::is_array_v<std::remove_reference_t<T>>
     constexpr auto to_array(const uni_auto<T>& a) noexcept {

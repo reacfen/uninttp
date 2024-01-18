@@ -389,7 +389,7 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         </tr>
         <tr>
             <td><code>uninttp::promote_to_ref&lt;auto&amp; Value&gt;</code></td>
-            <td><p>Pre-constructs a <code>uni_auto</code> object after binding an lvalue to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/jKsGrTvzr">Here</a> you can find a live example to see this feature in action.</p></td>
+            <td><p>Pre-constructs a <code>uni_auto</code> object after binding an lvalue to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p>Keep in mind that all non-const variables of static storage duration are passed by reference by default so using this feature is redundant in those cases.</p><p><a href="https://godbolt.org/z/jKsGrTvzr">Here</a> you can find a live example to see this feature in action.</p></td>
         </tr>
     </tbody>
 </table>
