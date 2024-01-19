@@ -40,7 +40,7 @@ int main() {
 
 And if you thought, "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc., through it: [<kbd>Demo</kbd>](https://godbolt.org/z/Gv6Tv7v13)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc., through it: [<kbd>Demo</kbd>](https://godbolt.org/z/x3sToPreP)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -88,10 +88,15 @@ int main() {
     // Passing an array of static storage duration
     static int arr2[] { 1, 2, 4, 8 };
     print_array<arr2>();                                            // 1 2 4 8
-    static const int arr3[] { 1, 2, 8, 9 };
-    print_array<promote_to_ref<arr3>>();                            // 1 2 8 9
-    static constexpr int arr4[] { 1, 6, 10, 23 };
-    print_array<arr4>();                                            // 1 6 10 23
+    static constexpr int arr3[] { 1, 6, 10, 23 };
+    print_array<arr3>();                                            // 1 6 10 23
+    static const int arr4[] { 1, 2, 8, 9 };
+    /* `arr4` is passed by value by default so we need to force the
+     * compiler to pass it by reference instead by using
+     * `promote_to_ref` */
+    // print_array<arr4>();                                         // Error! `arr4` cannot be
+                                                                    // passed by value
+    print_array<promote_to_ref<arr4>>();                            // 1 2 8 9
 
     // Passing an `std::array` object
     print_array<std::array { 1, 4, 6, 9 }>();                       // 1 4 6 9
@@ -303,7 +308,7 @@ int main() {
 }
 ```
 
-Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/hGPqaYch9)
+Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/8Ghb8vbhv)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -329,7 +334,8 @@ struct X {
 template <uni_auto A, uni_auto B>
 void swap_vars() {
     std::ranges::swap(A, B);
-    // Alternatively: `uninttp::swap(A, B);`
+    /* Alternatives: `uninttp::swap(A, B);`,
+                     `A.swap(B);` */
 }
 
 int main() {
@@ -398,7 +404,7 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
 
 ## Limitations:
 
-1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t` or `uni_auto_simplify_t` to fetch the type: [<kbd>Demo</kbd>](https://godbolt.org/z/KzT3Msner)
+1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t` or `uni_auto_simplify_t` to fetch the type: [<kbd>Demo</kbd>](https://godbolt.org/z/WE43nzhq7)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -413,8 +419,8 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         // Using `uni_auto_t`:
         static_assert(std::is_same_v<uni_auto_t<X>, double>);                             // OK
 
-        /* Using `uni_auto_v` and then using `decltype()` and then removing the
-         * `const` specifier from the type returned: */
+        /* Using `uni_auto_v` and then using `decltype()` and then removing the `const`
+         * specifier from the type returned: */
         static_assert(
             std::is_same_v<std::remove_const_t<decltype(uni_auto_v<X>)>, double>
         );                                                                                // OK

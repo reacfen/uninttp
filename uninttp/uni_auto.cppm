@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v3.9.9
+ * Version: v3.9.10
  *
  * Copyright (c) 2021-24 reacfen
  *
@@ -40,6 +40,7 @@ import <type_traits>;
 import <iterator>;
 import <cstddef>;
 import <utility>;
+import <format>;
 import <array>;
 
 export namespace uninttp {
@@ -138,9 +139,9 @@ export namespace uninttp {
             return std::extent_v<T>;
         }
 
-        constexpr auto swap(const uni_auto& other) const noexcept
-            requires std::is_array_v<T> {
-            std::swap(value, other.value);
+        constexpr auto swap(const uni_auto& other) const noexcept {
+            using std::swap;
+            swap(value, other.value);
         }
 
         constexpr auto data() const noexcept
@@ -1059,3 +1060,11 @@ export namespace uninttp {
         return std::to_array(a.value);
     }
 }
+
+export template <typename T>
+struct std::formatter<uninttp::uni_auto<T>> : std::formatter<std::decay_t<T>> {
+    template <typename FormatContext>
+    auto format(const uninttp::uni_auto<T>& a, FormatContext& c) const {
+        return formatter<decay_t<T>>::format(a.operator typename uninttp::uni_auto<T>::type(), c);
+    }
+};
