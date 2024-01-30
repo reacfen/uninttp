@@ -308,13 +308,12 @@ int main() {
 }
 ```
 
-Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/8Ghb8vbhv)
+Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/dG996sWvE)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
 #include <concepts>
 #include <iostream>
-#include <utility>
 
 using namespace uninttp;
 
@@ -397,7 +396,7 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         </tr>
         <tr>
             <td><code>uninttp::promote_to_ref&lt;auto&amp; Value&gt;</code></td>
-            <td><p>Pre-constructs a <code>uni_auto</code> object after binding an lvalue to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p>Keep in mind that all non-const variables of static storage duration are passed by reference by default so using this feature is redundant in those cases.</p><p><a href="https://godbolt.org/z/jKsGrTvzr">Here</a> you can find a live example to see this feature in action.</p></td>
+            <td><p>Pre-constructs a <code>uni_auto</code> object after binding an lvalue to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/jKsGrTvzr">Here</a> you can find a live example to see this feature in action.</p><p>(<b>Note</b>: Keep in mind that all non-const variables of static storage duration are passed by reference by default so using this feature is redundant in those cases.)</p></td>
         </tr>
     </tbody>
 </table>
@@ -492,9 +491,9 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         fun2<arr>(); // 1 2 3
     }
     ```
-3)  This is more or less an extension to restriction (2).
+3)  This is more or less an extension to limitation (2).
 
-    Accessing members through lvalue references of class types with `uni_auto` is a little tricky as the dot operator doesn't work as expected. Instead, one would have to first use `uni_auto_v` to extract the underlying lvalue reference manually and then proceed to access the members of the class as usual: [<kbd>Demo</kbd>](https://godbolt.org/z/b4f4x4oEs)
+    Accessing members through lvalue references of class types with `uni_auto` is a little tricky as the dot operator doesn't work as expected. Instead, one would have to first use `uni_auto_v` to extract the underlying lvalue reference manually and then proceed to access the members of the class as usual: [<kbd>Demo</kbd>](https://godbolt.org/z/1r3jbz6eE)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <iostream>
@@ -516,10 +515,11 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
 
         // const auto a = X.p;     // This will NOT work since the C++ Standard does not allow
         // std::cout << a << '\n'; // overloading the dot operator (yet)
+                                   // For more info, see the 'P0416R1' proposal
 
         /* Extract the value out of `X` beforehand and bind it to another reference which can
          * now be used to access the member `p`: */
-        auto&& ref = uni_auto_v<X>;
+        auto& ref = uni_auto_v<X>;
         const auto b = ref.p;
         std::cout << b << '\n';    // 2
 
