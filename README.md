@@ -40,7 +40,7 @@ int main() {
 
 And if you thought, "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc., through it: [<kbd>Demo</kbd>](https://godbolt.org/z/x3sToPreP)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc., through it: [<kbd>Demo</kbd>](https://godbolt.org/z/ovc1MzoYP)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -91,9 +91,8 @@ int main() {
     static constexpr int arr3[] { 1, 6, 10, 23 };
     print_array<arr3>();                                            // 1 6 10 23
     static const int arr4[] { 1, 2, 8, 9 };
-    /* `arr4` is passed by value by default so we need to force the
-     * compiler to pass it by reference instead by using
-     * `promote_to_ref` */
+    /* `arr4` is passed by value by default so we need to force the compiler to pass it by
+     * reference instead using `promote_to_ref` */
     // print_array<arr4>();                                         // Error! `arr4` cannot be
                                                                     // passed by value
     print_array<promote_to_ref<arr4>>();                            // 1 2 8 9
@@ -403,14 +402,14 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
 
 ## Limitations:
 
-1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t` or `uni_auto_simplify_t` to fetch the type: [<kbd>Demo</kbd>](https://godbolt.org/z/WE43nzhq7)
+1) The datatype of the value held by a `uni_auto` object cannot be fetched using `decltype(X)` as is done with `auto`-template parameters. Instead, one would have to use `uni_auto_t` or `uni_auto_simplify_t` to fetch the type: [<kbd>Demo</kbd>](https://godbolt.org/z/bh69M4Y6n)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
 
     using namespace uninttp;
 
-    template <uni_auto X = 1.89>
+    template <uni_auto X>
     void fun() {
         // This doesn't work for obvious reasons:
         // static_assert(std::same_as<decltype(X), double>);                              // Error
@@ -438,7 +437,7 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         fun<1.89>();
     }
     ```
-2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/rzGjxM98E)
+2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/7zhj9zGce)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -484,21 +483,7 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         print_array(uni_auto_v<X>); // OK
     }
 
-    int main() {
-        fun1<42>();
-
-        constexpr int arr[] { 1, 2, 3 };
-        fun2<arr>(); // 1 2 3
-    }
-    ```
-3)  This is more or less an extension to limitation (2).
-
-    Accessing members through lvalue references of class types with `uni_auto` is a little tricky as the dot operator doesn't work as expected. Instead, one would have to first use `uni_auto_v` to extract the underlying lvalue reference manually and then proceed to access the members of the class as usual: [<kbd>Demo</kbd>](https://godbolt.org/z/1r3jbz6eE)
-    ```cpp
-    #include <uninttp/uni_auto.hpp>
-    #include <iostream>
-
-    using namespace uninttp;
+    /////////////////////////////////////////
 
     struct some_class {
         int p = 0;
@@ -509,7 +494,7 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
     };
 
     template <uni_auto X>
-    void fun() {
+    void fun3() {
         // Assignment operator works as expected
         X = 2;
 
@@ -521,17 +506,22 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
          * now be used to access the member `p`: */
         auto& ref = uni_auto_v<X>;
         const auto b = ref.p;
-        std::cout << b << '\n';    // 2
+        std::cout << b << '\n';
 
         /* Or if you want to access the member `p` directly, you would have to call `uni_auto_v`
          * explicitly: */
         const auto c = uni_auto_v<X>.p;
-        std::cout << c << '\n';    // 2
+        std::cout << c << '\n';
     }
 
     int main() {
+        fun1<42>();
+
+        constexpr int arr[] { 1, 2, 3 };
+        fun2<arr>();      // 1 2 3
+
         static some_class some_obj;
-        fun<some_obj>();
+        fun3<some_obj>(); // 2
     }
     ```
 
