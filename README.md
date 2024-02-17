@@ -395,7 +395,7 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         </tr>
         <tr>
             <td><code>uninttp::promote_to_ref&lt;auto&amp; Value&gt;</code></td>
-            <td><p>Pre-constructs a <code>uni_auto</code> object after binding an lvalue to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/jKsGrTvzr">Here</a> you can find a live example to see this feature in action.</p><p>(<b>Note</b>: Keep in mind that all non-const variables of static storage duration are passed by reference by default so using this feature is redundant in those cases.)</p></td>
+            <td><p>Pre-constructs a <code>uni_auto</code> object after binding an lvalue to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/5dbxGMEds">Here</a> you can find a live example to see this feature in action.</p><p>(<b>Note</b>: Keep in mind that all non-const variables of static storage duration are passed by reference by default so using this feature is redundant in those cases.)</p></td>
         </tr>
     </tbody>
 </table>
@@ -437,12 +437,13 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         fun<1.89>();
     }
     ```
-2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/7zhj9zGce)
+2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/o567bnre9)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
     #include <iostream>
     #include <cstddef>
+    #include <array>
 
     using namespace uninttp;
 
@@ -514,14 +515,26 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         std::cout << c << '\n';
     }
 
+    /////////////////////////////////////////
+
+    template <uni_auto X>
+    constexpr auto convert_to_array() {
+        return uninttp::to_array(X);
+        // Alternative: `return std::to_array(uni_auto_v<X>);`
+    }
+
+    /////////////////////////////////////////
+
     int main() {
         fun1<42>();
 
         constexpr int arr[] { 1, 2, 3 };
-        fun2<arr>();      // 1 2 3
+        fun2<arr>();                                                       // 1 2 3
 
         static some_class some_obj;
-        fun3<some_obj>(); // 2
+        fun3<some_obj>();                                                  // 2
+
+        static_assert(convert_to_array<arr>() ==  std::array { 1, 2, 3 }); // OK
     }
     ```
 
