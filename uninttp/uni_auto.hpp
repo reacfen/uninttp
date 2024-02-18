@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v4.1
+ * Version: v4.2
  *
  * Copyright (c) 2021-... reacfen
  *
@@ -40,7 +40,6 @@
     #error uninttp can only be used with C++20 or later.
 #endif
 
-#include <string_view>
 #include <type_traits>
 #include <iterator>
 #include <cstddef>
@@ -56,12 +55,6 @@ namespace uninttp {
     struct uni_auto;
 
     namespace uninttp_internals {
-        template <typename T>
-        struct is_string_view : std::false_type {};
-
-        template <typename CharT, typename Traits>
-        struct is_string_view<std::basic_string_view<CharT, Traits>> : std::true_type {};
-
         template <typename T>
         struct is_uni_auto : std::false_type {};
 
@@ -257,25 +250,9 @@ namespace uninttp {
     template <typename T, std::size_t N>
     uni_auto(const T(&)[N]) -> uni_auto<const T[N]>;
 
-    /* Deals with built-in arrays, lvalue references, function pointers, integral and enumeration types, pointers to objects, pointers to member functions and objects, nullptr, etc. (Basically everything else) */
+    /* Deals with built-in arrays, function pointers, integral and enumeration types, pointers to objects, pointers to member functions and objects, nullptr, etc. (Basically everything else) */
     template <typename T>
-    uni_auto(T&&) -> uni_auto<T>;
-    template <typename T>
-        requires (!std::is_const_v<T>)
-    uni_auto(T&) -> uni_auto<T&>;
-    template <typename T>
-        requires (!(
-            std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const char>          ||
-            std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const signed char>   ||
-            std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const unsigned char> ||
-            std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const wchar_t>       ||
-            std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const char8_t>       ||
-            std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const char16_t>      ||
-            std::is_same_v<std::remove_volatile_t<std::remove_pointer_t<T>>, const char32_t>
-        ) && !std::is_volatile_v<T> && !uninttp_internals::is_string_view<T>::value && std::is_trivially_copyable_v<T> && (std::is_scalar_v<std::remove_pointer_t<T>> || std::is_class_v<std::remove_pointer_t<T>> || std::is_function_v<std::remove_pointer_t<T>>))
-    uni_auto(const T&) -> uni_auto<const T>;
-    template <typename T>
-    uni_auto(const T&) -> uni_auto<const T&>;
+    uni_auto(const T&) -> uni_auto<T>;
 
     template <typename T>
     constexpr decltype(auto) operator++(const uni_auto<T>& a) noexcept(noexcept(++a.operator typename uni_auto<T>::type()))
@@ -998,7 +975,7 @@ namespace uninttp {
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
-    using uni_auto_t = std::remove_const_t<typename decltype(Value)::type>;
+    using uni_auto_t = typename decltype(Value)::type;
 
     /**
      * @brief Fetches the underlying value held by a `uni_auto` object.
@@ -1008,14 +985,14 @@ namespace uninttp {
     constexpr uni_auto_t<Value> uni_auto_v = Value;
 
     /**
-     * @brief Similar to `uni_auto_t` but converts array types and function types to pointers and removes any references from the type returned.
+     * @brief Similar to `uni_auto_t` but condenses array types and function types to pointers and removes any references from the type returned.
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
     using uni_auto_simplify_t = std::decay_t<typename decltype(Value)::type>;
 
     /**
-     * @brief Similar to `uni_auto_v` but reduces array types and function types to pointers and casts away any and all references.
+     * @brief Similar to `uni_auto_v` but converts array types and function types to pointers and casts away any and all references.
      * @tparam Value The `uni_auto` object
      */
     template <uni_auto Value>
@@ -1023,11 +1000,19 @@ namespace uninttp {
 
     /**
      * @brief Pre-constructs a `uni_auto` object after binding an lvalue to a reference.
-     * @tparam Value The value that the reference will bind to
+     * @tparam Value The lvalue that the reference will bind to
      */
     template <auto& Value>
         requires (!uninttp_internals::is_uni_auto<std::remove_cvref_t<decltype(Value)>>::value)
     constexpr uni_auto<decltype(Value)> promote_to_ref = Value;
+
+    /**
+     * @brief Pre-constructs a `uni_auto` object after binding an lvalue to a const reference.
+     * @tparam Value The lvalue that the const reference will bind to
+     */
+    template <const auto& Value>
+        requires (!uninttp_internals::is_uni_auto<std::remove_cvref_t<decltype(Value)>>::value)
+    constexpr uni_auto<decltype(Value)> promote_to_cref = Value;
 
     /**
      * @brief Exchanges the values held by `a` and `b`.

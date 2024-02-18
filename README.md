@@ -40,7 +40,7 @@ int main() {
 
 And if you thought, "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc., through it: [<kbd>Demo</kbd>](https://godbolt.org/z/5o3K5P3dP)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc., through it: [<kbd>Demo</kbd>](https://godbolt.org/z/Ga9Ez1Yxx)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -87,14 +87,14 @@ int main() {
 
     // Passing an array of static storage duration
     static int arr2[] { 1, 2, 4, 8 };
-    print_array<arr2>();                                            // 1 2 4 8
+    // `promote_to_ref` tells the compiler to pass `arr2` by reference
+    print_array<promote_to_ref<arr2>>();                            // 1 2 4 8
     static constexpr int arr3[] { 1, 6, 10, 23 };
+    // Passing `arr3` by value
     print_array<arr3>();                                            // 1 6 10 23
-    static const int arr4[] { 1, 2, 8, 9 }; // Note that `arr4` is not `constexpr`
-    /* `arr4` is passed by value by default so we need to force the compiler to pass it by
-     * reference instead using `promote_to_ref` */
-    // print_array<arr4>();                                         // Error! `arr4` cannot be
-                                                                    // passed by value
+    // Passing `arr3` by reference
+    print_array<promote_to_ref<arr3>>();                            // 1 6 10 23
+    static const int arr4[] { 1, 2, 8, 9 };
     print_array<promote_to_ref<arr4>>();                            // 1 2 8 9
 
     // Passing an `std::array` object
@@ -243,7 +243,7 @@ int main() {
 }
 ```
 
-Example using function pointers: [<kbd>Demo</kbd>](https://godbolt.org/z/qb37n1bhq)
+Example using function pointers: [<kbd>Demo</kbd>](https://godbolt.org/z/vKP7shjvc)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -261,9 +261,9 @@ constexpr auto call_fun() {
 
 int main() {
     // Passing `some_fun` by reference
-    static_assert(call_fun<some_fun>() == 42);  // OK
+    static_assert(call_fun<promote_to_ref<some_fun>>() == 42);  // OK
     // Passing `some_fun` as a function pointer
-    static_assert(call_fun<&some_fun>() == 42); // OK
+    static_assert(call_fun<&some_fun>() == 42);                 // OK
 }
 ```
 
@@ -307,7 +307,7 @@ int main() {
 }
 ```
 
-Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/dG996sWvE)
+Example using lvalue references: [<kbd>Demo</kbd>](https://godbolt.org/z/z5xsxEcjx)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -340,9 +340,9 @@ int main() {
     {
         static X x{ 42 }, y{ 69 };
 
-        std::cout << x << ' ' << y << '\n';     // 42 69
-        swap_vars<x, y>();                      // `swap(X&, X&)` was called
-        std::cout << x << ' ' << y << '\n';     // 69 42
+        std::cout << x << ' ' << y << '\n';                // 42 69
+        swap_vars<promote_to_ref<x>, promote_to_ref<y>>(); // `swap(X&, X&)` was called
+        std::cout << x << ' ' << y << '\n';                // 69 42
     }
 
     /////////////////////////////////////////
@@ -350,9 +350,9 @@ int main() {
     {
         static int x = 86, y = 420;
 
-        std::cout << x << ' ' << y << '\n';     // 86 420
-        swap_vars<x, y>();                      // Swaps the values of `x` and `y`
-        std::cout << x << ' ' << y << '\n';     // 420 86
+        std::cout << x << ' ' << y << '\n';                // 86 420
+        swap_vars<promote_to_ref<x>, promote_to_ref<y>>(); // Swaps the values of `x` and `y`
+        std::cout << x << ' ' << y << '\n';                // 420 86
     }
 }
 ```
@@ -363,7 +363,7 @@ All the examples shown above have used function templates to demonstrate the cap
 
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 
-The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
+The test suite can be found [here](https://godbolt.org/z/Tezd35ET3).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
@@ -395,7 +395,11 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         </tr>
         <tr>
             <td><code>uninttp::promote_to_ref&lt;auto&amp; Value&gt;</code></td>
-            <td><p>Pre-constructs a <code>uni_auto</code> object after binding an lvalue to a reference.</p><p>In simple terms, it's used to force the compiler to pass by reference through <code>uni_auto</code>.</p><p>This feature only exists for some very special use cases where it becomes necessary to pass by reference instead of passing by value.</p><p><a href="https://godbolt.org/z/P4fsaqW4x">Here</a> you can find a live example to see this feature in action.</p><p>(<b>Note</b>: Keep in mind that all non-const variables of static storage duration are passed by reference by default so using this feature is redundant in those cases.)</p></td>
+            <td><p>Pre-constructs a <code>uni_auto</code> object after binding an lvalue to a reference.</p><p>In simple terms, it's used to tell the compiler to pass by reference through <code>uni_auto</code>.</p><p><a href="https://godbolt.org/z/qjTh9qYnv">Here</a> you can find a live example to see this feature in action.</p></td>
+        </tr>
+        <tr>
+            <td><code>uninttp::promote_to_cref&lt;const auto&amp; Value&gt;</code></td>
+            <td><p>Pre-constructs a <code>uni_auto</code> object after binding an lvalue to a const reference.</p></td>
         </tr>
     </tbody>
 </table>
@@ -437,7 +441,7 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         fun<1.89>();
     }
     ```
-2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/o567bnre9)
+2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/88915fxro)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -532,7 +536,7 @@ The test suite can be found [here](https://godbolt.org/z/KGenMGGvz).
         fun2<arr>();                                                       // 1 2 3
 
         static some_class some_obj;
-        fun3<some_obj>();                                                  // 2
+        fun3<promote_to_ref<some_obj>>();                                  // 2
 
         static_assert(convert_to_array<arr>() ==  std::array { 1, 2, 3 }); // OK
     }
