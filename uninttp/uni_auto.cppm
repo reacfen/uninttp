@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v4.2
+ * Version: v4.2.1
  *
  * Copyright (c) 2021-... reacfen
  *
@@ -132,58 +132,53 @@ export namespace uninttp {
             return std::extent_v<T>;
         }
 
+        constexpr auto size() const noexcept
+            requires (!std::is_array_v<T>) {
+            return std::size(value);
+        }
+
         constexpr auto swap(const uni_auto& other) const noexcept {
             using std::swap;
             swap(value, other.value);
         }
 
-        constexpr auto data() const noexcept
-            requires std::is_array_v<T> {
+        constexpr auto data() const noexcept {
             return std::data(value);
         }
 
-        constexpr auto empty() const noexcept
-            requires std::is_array_v<T> {
+        constexpr auto empty() const noexcept {
             return std::empty(value);
         }
 
-        constexpr auto begin() const noexcept
-            requires std::is_array_v<T> {
+        constexpr auto begin() const noexcept {
             return std::begin(value);
         }
 
-        constexpr auto end() const noexcept
-            requires std::is_array_v<T> {
+        constexpr auto end() const noexcept {
             return std::end(value);
         }
 
-        constexpr auto cbegin() const noexcept
-            requires std::is_array_v<T> {
+        constexpr auto cbegin() const noexcept {
             return std::cbegin(value);
         }
 
-        constexpr auto cend() const noexcept
-            requires std::is_array_v<T> {
+        constexpr auto cend() const noexcept {
             return std::cend(value);
         }
 
-        constexpr auto rbegin() const noexcept
-            requires std::is_array_v<T> {
+        constexpr auto rbegin() const noexcept {
             return std::rbegin(value);
         }
 
-        constexpr auto rend() const noexcept
-            requires std::is_array_v<T> {
+        constexpr auto rend() const noexcept {
             return std::rend(value);
         }
 
-        constexpr auto crbegin() const noexcept
-            requires std::is_array_v<T> {
+        constexpr auto crbegin() const noexcept {
             return std::crbegin(value);
         }
 
-        constexpr auto crend() const noexcept
-            requires std::is_array_v<T> {
+        constexpr auto crend() const noexcept {
             return std::crend(value);
         }
 
