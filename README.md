@@ -363,7 +363,7 @@ All the examples shown above have used function templates to demonstrate the cap
 
 An exhaustive test on uninttp's `uninttp::uni_auto` has been done to ensure that it consistently works for almost every non-type template argument allowed.
 
-The test suite can be found [here](https://godbolt.org/z/Tezd35ET3).
+The test suite can be found [here](https://godbolt.org/z/fvfWqjGPP).
 
 (*P.S.*: For reference, one can look up [this](https://en.cppreference.com/w/cpp/language/template_parameters) link.)
 
@@ -441,7 +441,7 @@ The test suite can be found [here](https://godbolt.org/z/Tezd35ET3).
         fun<1.89>();
     }
     ```
-2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/88915fxro)
+2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/jEneT4nY9)
     ```cpp
     #include <uninttp/uni_auto.hpp>
     #include <type_traits>
@@ -450,6 +450,8 @@ The test suite can be found [here](https://godbolt.org/z/Tezd35ET3).
     #include <array>
 
     using namespace uninttp;
+
+    /////////////////////////////////////////
 
     template <uni_auto X>
     void fun1() {

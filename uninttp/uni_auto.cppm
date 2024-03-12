@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v4.2.1
+ * Version: v4.2.2
  *
  * Copyright (c) 2021-... reacfen
  *
