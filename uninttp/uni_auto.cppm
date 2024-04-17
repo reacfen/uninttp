@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v4.2.3
+ * Version: v4.2.4
  *
  * Copyright (c) 2021-... reacfen
  *
@@ -472,13 +472,6 @@ export namespace uninttp {
 
     template <typename T, typename U>
         requires (!std::is_class_v<T>)
-    constexpr decltype(auto) operator!=(const uni_auto<T>& a, const uni_auto<U>& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() != b.operator typename uni_auto<U>::type()))
-        requires requires { a.operator typename uni_auto<T>::type() != b.operator typename uni_auto<U>::type(); } {
-        return a.operator typename uni_auto<T>::type() != b.operator typename uni_auto<U>::type();
-    }
-
-    template <typename T, typename U>
-        requires (!std::is_class_v<T>)
     constexpr decltype(auto) operator<=>(const uni_auto<T>& a, const uni_auto<U>& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() <=> b.operator typename uni_auto<U>::type()))
         requires requires { a.operator typename uni_auto<T>::type() <=> b.operator typename uni_auto<U>::type(); } {
         return a.operator typename uni_auto<T>::type() <=> b.operator typename uni_auto<U>::type();
@@ -661,13 +654,6 @@ export namespace uninttp {
 
     template <typename T, typename U>
         requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
-    constexpr decltype(auto) operator!=(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) != b.operator typename uni_auto<U>::type()))
-        requires requires { std::forward<T>(a) != b.operator typename uni_auto<U>::type(); } {
-        return std::forward<T>(a) != b.operator typename uni_auto<U>::type();
-    }
-
-    template <typename T, typename U>
-        requires (!is_uni_auto<std::remove_cvref_t<T>>::value)
     constexpr decltype(auto) operator<=>(T&& a, const uni_auto<U>& b) noexcept(noexcept(std::forward<T>(a) <=> b.operator typename uni_auto<U>::type()))
         requires requires { std::forward<T>(a) <=> b.operator typename uni_auto<U>::type(); } {
         return std::forward<T>(a) <=> b.operator typename uni_auto<U>::type();
@@ -846,13 +832,6 @@ export namespace uninttp {
     constexpr decltype(auto) operator==(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() == std::forward<U>(b)))
         requires requires { a.operator typename uni_auto<T>::type() == std::forward<U>(b); } {
         return a.operator typename uni_auto<T>::type() == std::forward<U>(b);
-    }
-
-    template <typename T, typename U>
-        requires (!is_uni_auto<std::remove_cvref_t<U>>::value)
-    constexpr decltype(auto) operator!=(const uni_auto<T>& a, U&& b) noexcept(noexcept(a.operator typename uni_auto<T>::type() != std::forward<U>(b)))
-        requires requires { a.operator typename uni_auto<T>::type() != std::forward<U>(b); } {
-        return a.operator typename uni_auto<T>::type() != std::forward<U>(b);
     }
 
     template <typename T, typename U>
