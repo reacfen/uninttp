@@ -102,7 +102,7 @@ int main() {
 }
 ```
 
-You can also use it with parameter packs, obviously: [<kbd>Demo</kbd>](https://godbolt.org/z/1drPaGTxM)
+You can also use it with parameter packs, obviously: [<kbd>Demo</kbd>](https://godbolt.org/z/Wf67xnahc)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -110,7 +110,7 @@ You can also use it with parameter packs, obviously: [<kbd>Demo</kbd>](https://g
 
 using namespace uninttp;
 
-template <uni_auto ...Values>
+template <uni_auto... Values>
 void print() {
     ((std::cout << Values << ' '), ...) << '\n';
 }
@@ -441,108 +441,125 @@ The test suite can be found [here](https://godbolt.org/z/fvfWqjGPP).
         fun<1.89>();
     }
     ```
-2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`: [<kbd>Demo</kbd>](https://godbolt.org/z/jEneT4nY9)
-    ```cpp
-    #include <uninttp/uni_auto.hpp>
-    #include <type_traits>
-    #include <iostream>
-    #include <cstddef>
-    #include <array>
+2) There may be some cases where the conversion operator of the `uni_auto` object doesn't get invoked. In such a scenario, one would need to explicitly notify the compiler to extract the value out of the `uni_auto` object using `uni_auto_v` or `uni_auto_simplify_v`:
+    - During type inference: [<kbd>Demo</kbd>](https://godbolt.org/z/sdP6vT67c)
+        ```cpp
+        #include <uninttp/uni_auto.hpp>
+        #include <type_traits>
 
-    using namespace uninttp;
+        using namespace uninttp;
 
-    /////////////////////////////////////////
+        template <uni_auto X>
+        void fun() {
+            // The conversion operator doesn't get invoked in this case:
+            // constexpr auto a = X;
 
-    template <uni_auto X>
-    void fun1() {
-        // The conversion operator doesn't get invoked in this case:
-        // constexpr auto a = X;
+            // Using an explicit conversion statement:
+            constexpr int b = X;
 
-        // Using an explicit conversion statement:
-        constexpr int b = X;
+            // Using `uni_auto_v`:
+            constexpr auto c = uni_auto_v<X>;
 
-        // Using `uni_auto_v`:
-        constexpr auto c = uni_auto_v<X>;
+            // Using `uni_auto_simplify_v`:
+            constexpr auto d = uni_auto_simplify_v<X>;
 
-        // Using `uni_auto_simplify_v`:
-        constexpr auto d = uni_auto_simplify_v<X>;
-
-        // static_assert(std::is_same_v<decltype(a), const int>); // Error
-        static_assert(std::is_same_v<decltype(b), const int>);    // OK
-        static_assert(std::is_same_v<decltype(c), const int>);    // OK
-        static_assert(std::is_same_v<decltype(d), const int>);    // OK
-    }
-
-    /////////////////////////////////////////
-
-    template <typename T, std::size_t N>
-    void print_array(T(&arr)[N]) {
-        for (const auto& elem : arr)
-            std::cout << elem << ' ';
-
-        std::cout << '\n';
-    }
-
-    template <uni_auto X>
-    void fun2() {
-        // print_array(X);          // Error! `X`'s conversion operator is not invoked
-                                    // during the call!
-        print_array(uni_auto_v<X>); // OK
-    }
-
-    /////////////////////////////////////////
-
-    struct some_class {
-        int p = 0;
-        some_class& operator=(const int rhs) {
-            p = rhs;
-            return *this;
+            // static_assert(std::is_same_v<decltype(a), const int>); // Error
+            static_assert(std::is_same_v<decltype(b), const int>);    // OK
+            static_assert(std::is_same_v<decltype(c), const int>);    // OK
+            static_assert(std::is_same_v<decltype(d), const int>);    // OK
         }
-    };
 
-    template <uni_auto X>
-    void fun3() {
-        // Assignment operator works as expected
-        X = 2;
+        int main() {
+            fun<42>();
+        }
+        ```
+    - When accessing the members of a reference to a class object: [<kbd>Demo</kbd>](https://godbolt.org/z/5dGzYfPv8)
+        ```cpp
+        #include <uninttp/uni_auto.hpp>
+        #include <iostream>
 
-        // const auto a = X.p;     // This will NOT work since the C++ Standard does not allow
-        // std::cout << a << '\n'; // overloading the dot operator (yet)
-                                   // For more info, see the 'P0416R1' proposal
+        using namespace uninttp;
 
-        /* Extract the value out of `X` beforehand and bind it to another reference which can
-         * now be used to access the member `p`: */
-        auto& ref = uni_auto_v<X>;
-        const auto b = ref.p;
-        std::cout << b << '\n';
+        struct some_class {
+            int p = 0;
+            some_class& operator=(const int rhs) {
+                p = rhs;
+                return *this;
+            }
+        };
 
-        /* Or if you want to access the member `p` directly, you would have to call `uni_auto_v`
-         * explicitly: */
-        const auto c = uni_auto_v<X>.p;
-        std::cout << c << '\n';
-    }
+        template <uni_auto X>
+        void fun() {
+            // Assignment operator works as expected
+            X = 2;
 
-    /////////////////////////////////////////
+            // const auto a = X.p;     // This will NOT work since the C++ Standard does not allow
+            // std::cout << a << '\n'; // overloading the dot operator (yet)
+                                       // For more info, see the 'P0416R1' proposal
 
-    template <uni_auto X>
-    constexpr auto convert_to_array() {
-        return uninttp::to_array(X);
-        // Alternative: `return std::to_array(uni_auto_v<X>);`
-    }
+            /* Extract the value out of `X` beforehand and bind it to another reference which can
+             * now be used to access the member `p`: */
+            auto& ref = uni_auto_v<X>;
+            const auto b = ref.p;
+            std::cout << b << '\n';
 
-    /////////////////////////////////////////
+            /* Or if you want to access the member `p` directly, you would have to call `uni_auto_v`
+             * explicitly: */
+            const auto c = uni_auto_v<X>.p;
+            std::cout << c << '\n';
+        }
 
-    int main() {
-        fun1<42>();
+        int main() {
+            static some_class some_obj;
+            fun<promote_to_ref<some_obj>>(); // 2
+        }
+        ```
+    - When passing a reference to a primitive array as a function parameter: [<kbd>Demo</kbd>](https://godbolt.org/z/dc699a7Wc)
+        ```cpp
+        #include <uninttp/uni_auto.hpp>
+        #include <iostream>
+        #include <cstddef>
 
-        constexpr int arr[] { 1, 2, 3 };
-        fun2<arr>();                                                       // 1 2 3
+        using namespace uninttp;
 
-        static some_class some_obj;
-        fun3<promote_to_ref<some_obj>>();                                  // 2
+        template <typename T, std::size_t N>
+        void print_array(T(&arr)[N]) {
+            for (const auto& elem : arr)
+                std::cout << elem << ' ';
 
-        static_assert(convert_to_array<arr>() ==  std::array { 1, 2, 3 }); // OK
-    }
-    ```
+            std::cout << '\n';
+        }
+
+        template <uni_auto X>
+        void fun() {
+            // print_array(X);          // Error! `X`'s conversion operator is not invoked
+                                        // during the call!
+            print_array(uni_auto_v<X>); // OK
+        }
+
+        int main() {
+            constexpr int arr[] { 1, 2, 3 };
+            fun<arr>(); // 1 2 3
+        }
+        ```
+    - When using `std::to_array()`: [<kbd>Demo</kbd>](https://godbolt.org/z/Y77e77rjc)
+        ```cpp
+        #include <uninttp/uni_auto.hpp>
+        #include <array>
+
+        using namespace uninttp;
+
+        template <uni_auto X>
+        constexpr auto convert_to_array() {
+            return uninttp::to_array(X);
+            // Alternative: `return std::to_array(uni_auto_v<X>);`
+        }
+
+        int main() {
+            constexpr int arr[] { 1, 2, 3 };
+            static_assert(convert_to_array<arr>() ==  std::array { 1, 2, 3 }); // OK
+        }
+        ```
 
 ## Playground:
 

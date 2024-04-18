@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v4.2.4
+ * Version: v4.2.5
  *
  * Copyright (c) 2021-... reacfen
  *
@@ -67,7 +67,7 @@ namespace uninttp {
         using type = const T(&)[N];
         std::remove_reference_t<type> value;
 
-        template <std::size_t ...Indices>
+        template <std::size_t... Indices>
         constexpr uni_auto(type v, std::index_sequence<Indices...>) noexcept(std::is_nothrow_constructible_v<T, T&>) : value{ v[Indices]... } {}
 
         constexpr uni_auto(type v) noexcept(noexcept(uni_auto{ v, std::make_index_sequence<N>() })) : uni_auto{ v, std::make_index_sequence<N>() } {}
@@ -193,7 +193,7 @@ namespace uninttp {
             return value = std::forward<U>(b);
         }
 
-        template <typename ...Args>
+        template <typename... Args>
         constexpr decltype(auto) operator[](Args&&... args) const noexcept(noexcept(value.operator[](std::forward<Args>(args)...)))
             requires requires { value.operator[](std::forward<Args>(args)...); } {
             return value.operator[](std::forward<Args>(args)...);
@@ -204,7 +204,7 @@ namespace uninttp {
             return value.operator->();
         }
 
-        template <typename ...Args>
+        template <typename... Args>
         constexpr decltype(auto) operator()(Args&&... args) const noexcept(noexcept(value(std::forward<Args>(args)...)))
             requires requires { value(std::forward<Args>(args)...); } {
             return value(std::forward<Args>(args)...);
