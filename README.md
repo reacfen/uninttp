@@ -357,6 +357,31 @@ int main() {
 }
 ```
 
+Formatting using [`std::format()`](https://en.cppreference.com/w/cpp/utility/format/format)/[`fmt::format()`](https://fmt.dev/latest/api.html#_CPPv4IDpEN3fmt6formatENSt6stringE13format_stringIDp1TEDpRR1T) is also supported: [<kbd>Demo</kbd>](https://godbolt.org/z/KbdxYGK4o)
+
+```cpp
+#include <iostream>
+
+// All the fmtlib headers have to be included BEFORE including `uni_auto.hpp`!
+#include <fmt/core.h>
+#include <uninttp/uni_auto.hpp>
+
+// C++20 formatting library
+#include <format>
+
+using namespace uninttp;
+
+template <uni_auto Value>
+void print() {
+    std::cout << std::format("{}\n", Value); // Using `std::format()`
+    std::cout << fmt::format("{}\n", Value); // Using `fmt::format()`
+}
+
+int main() {
+    print<"foo">(); // foo
+}
+```
+
 All the examples shown above have used function templates to demonstrate the capability of `uni_auto`. However, it can readily be used in any context.
 
 ## Test suite:
