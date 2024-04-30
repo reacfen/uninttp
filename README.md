@@ -17,6 +17,10 @@ uninttp also has a C++ module version, so, if your compiler supports [C++20 modu
 
 ```cpp
 import uninttp.uni_auto; // Improves compilation speed
+
+// Uncomment the lines below for fmtlib support
+// import fmt;
+// import uninttp.fmt_support;
 ```
 
 ## Usage:
@@ -357,16 +361,14 @@ int main() {
 }
 ```
 
-Formatting using [`std::format()`](https://en.cppreference.com/w/cpp/utility/format/format)/[`fmt::format()`](https://fmt.dev/latest/api.html#_CPPv4IDpEN3fmt6formatENSt6stringE13format_stringIDp1TEDpRR1T) is also supported: [<kbd>Demo</kbd>](https://godbolt.org/z/KbdxYGK4o)
+Formatting using [`std::format()`](https://en.cppreference.com/w/cpp/utility/format/format)/[`fmt::format()`](https://fmt.dev/latest/api.html#_CPPv4IDpEN3fmt6formatENSt6stringE13format_stringIDp1TEDpRR1T) is also supported: [<kbd>Demo</kbd>](https://godbolt.org/z/cedh9M5hP)
 
 ```cpp
-#include <iostream>
-
 // All the fmtlib headers have to be included BEFORE including `uni_auto.hpp`!
 #include <fmt/core.h>
 #include <uninttp/uni_auto.hpp>
 
-// C++20 formatting library
+#include <iostream>
 #include <format>
 
 using namespace uninttp;

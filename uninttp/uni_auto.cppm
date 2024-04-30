@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v4.2.6
+ * Version: v4.2.7
  *
  * Copyright (c) 2021-... reacfen
  *
@@ -943,13 +943,3 @@ struct std::formatter<uninttp::uni_auto<T>> : formatter<decay_t<T>> {
         return formatter<decay_t<T>>::format(a.operator typename uninttp::uni_auto<T>::type(), c);
     }
 };
-
-#ifdef FMT_STRING
-export template <typename T>
-struct fmt::formatter<uninttp::uni_auto<T>> : formatter<std::decay_t<T>> {
-    template <typename FormatContext>
-    auto format(const uninttp::uni_auto<T>& a, FormatContext& c) const {
-        return formatter<std::decay_t<T>>::format(a.operator typename uninttp::uni_auto<T>::type(), c);
-    }
-};
-#endif
