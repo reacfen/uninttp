@@ -44,7 +44,7 @@ int main() {
 
 And if you thought, "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc., through it: [<kbd>Demo</kbd>](https://godbolt.org/z/Ga9Ez1Yxx)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc., through it: [<kbd>Demo</kbd>](https://godbolt.org/z/WWhsWPr8z)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -93,12 +93,17 @@ int main() {
     static int arr2[] { 1, 2, 4, 8 };
     // `promote_to_ref` tells the compiler to pass `arr2` by reference
     print_array<promote_to_ref<arr2>>();                            // 1 2 4 8
+
+    // Passing a `constexpr` array of static storage duration
     static constexpr int arr3[] { 1, 6, 10, 23 };
     // Passing `arr3` by value
     print_array<arr3>();                                            // 1 6 10 23
     // Passing `arr3` by reference
     print_array<promote_to_ref<arr3>>();                            // 1 6 10 23
+
+    // Passing a `const` array of static storage duration
     static const int arr4[] { 1, 2, 8, 9 };
+    // `arr4` can only be passed by reference
     print_array<promote_to_ref<arr4>>();                            // 1 2 8 9
 
     // Passing an `std::array` object
@@ -500,7 +505,7 @@ The test suite can be found [here](https://godbolt.org/z/fvfWqjGPP).
             fun<42>();
         }
         ```
-    - When accessing the members of a reference to a class object: [<kbd>Demo</kbd>](https://godbolt.org/z/5dGzYfPv8)
+    - When accessing an object's members through a reference: [<kbd>Demo</kbd>](https://godbolt.org/z/5dGzYfPv8)
         ```cpp
         #include <uninttp/uni_auto.hpp>
         #include <iostream>
@@ -541,7 +546,7 @@ The test suite can be found [here](https://godbolt.org/z/fvfWqjGPP).
             fun<promote_to_ref<some_obj>>(); // 2
         }
         ```
-    - When passing a reference to a primitive array as a function parameter: [<kbd>Demo</kbd>](https://godbolt.org/z/dc699a7Wc)
+    - When the function parameter is a reference to an array: [<kbd>Demo</kbd>](https://godbolt.org/z/dc699a7Wc)
         ```cpp
         #include <uninttp/uni_auto.hpp>
         #include <iostream>

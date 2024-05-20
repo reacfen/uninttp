@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v4.2.7
+ * Version: v4.2.8
  *
  * Copyright (c) 2021-... reacfen
  *
@@ -51,10 +51,10 @@ export namespace uninttp {
 }
 
 template <typename T>
-struct is_uni_auto : std::false_type {};
+struct is_uni_auto final : std::false_type {};
 
 template <typename T>
-struct is_uni_auto<uninttp::uni_auto<T>> : std::true_type {};
+struct is_uni_auto<uninttp::uni_auto<T>> final : std::true_type {};
 
 export namespace uninttp {
     template <typename T, std::size_t N>

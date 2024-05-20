@@ -10,7 +10,7 @@
  *
  * uninttp (Universal Non-Type Template Parameters)
  *
- * Version: v4.2.7
+ * Version: v4.2.8
  *
  * Copyright (c) 2021-... reacfen
  *
@@ -56,10 +56,10 @@ namespace uninttp {
 
     namespace uninttp_internals {
         template <typename T>
-        struct is_uni_auto : std::false_type {};
+        struct is_uni_auto final : std::false_type {};
 
         template <typename T>
-        struct is_uni_auto<uni_auto<T>> : std::true_type {};
+        struct is_uni_auto<uni_auto<T>> final : std::true_type {};
     }
 
     template <typename T, std::size_t N>
@@ -950,13 +950,13 @@ struct std::formatter<uninttp::uni_auto<T>> : formatter<decay_t<T>> {
 };
 
 #ifdef FMT_EXPORT
-template <typename T>
-struct fmt::formatter<uninttp::uni_auto<T>> : formatter<std::decay_t<T>> {
-    template <typename FormatContext>
-    auto format(const uninttp::uni_auto<T>& a, FormatContext& c) const {
-        return formatter<std::decay_t<T>>::format(a.operator typename uninttp::uni_auto<T>::type(), c);
-    }
-};
+    template <typename T>
+    struct fmt::formatter<uninttp::uni_auto<T>> : formatter<std::decay_t<T>> {
+        template <typename FormatContext>
+        auto format(const uninttp::uni_auto<T>& a, FormatContext& c) const {
+            return formatter<std::decay_t<T>>::format(a.operator typename uninttp::uni_auto<T>::type(), c);
+        }
+    };
 #endif
 
 #endif /* UNINTTP_UNI_AUTO_HPP */
