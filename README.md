@@ -44,7 +44,7 @@ int main() {
 
 And if you thought, "Can't I just use something like `template <auto Value>` instead?", then you'd be absolutely correct. One can safely replace `uni_auto` with `auto`, at least for *this* example.
 
-However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc., through it: [<kbd>Demo</kbd>](https://godbolt.org/z/WWhsWPr8z)
+However, a template parameter declared with `uni_auto` can do much more than a template parameter declared with `auto` in the sense that you can also pass string literals, `constexpr`-marked arrays, arrays of static storage duration, etc., through it: [<kbd>Demo</kbd>](https://godbolt.org/z/vzdTnvK4j)
 
 ```cpp
 #include <uninttp/uni_auto.hpp>
@@ -87,19 +87,20 @@ int main() {
 
     // Passing an array marked as `constexpr`
     constexpr int arr1[] { 1, 8, 9, 20 };
+    // `arr1` can only be passed by value
     print_array<arr1>();                                            // 1 8 9 20
 
-    // Passing an array of static storage duration
-    static int arr2[] { 1, 2, 4, 8 };
-    // `promote_to_ref` tells the compiler to pass `arr2` by reference
-    print_array<promote_to_ref<arr2>>();                            // 1 2 4 8
-
     // Passing a `constexpr` array of static storage duration
-    static constexpr int arr3[] { 1, 6, 10, 23 };
-    // Passing `arr3` by value
-    print_array<arr3>();                                            // 1 6 10 23
-    // Passing `arr3` by reference
-    print_array<promote_to_ref<arr3>>();                            // 1 6 10 23
+    static constexpr int arr2[] { 1, 6, 10, 23 };
+    // Passing `arr2` by value
+    print_array<arr2>();                                            // 1 6 10 23
+    // Passing `arr2` by reference
+    print_array<promote_to_ref<arr2>>();                            // 1 6 10 23
+
+    // Passing a non-`const` array of static storage duration
+    static int arr3[] { 1, 2, 4, 8 };
+    // `arr3` can only be passed by reference
+    print_array<promote_to_ref<arr3>>();                            // 1 2 4 8
 
     // Passing a `const` array of static storage duration
     static const int arr4[] { 1, 2, 8, 9 };
